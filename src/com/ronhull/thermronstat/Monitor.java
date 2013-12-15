@@ -21,7 +21,6 @@ public class Monitor {
 	
 	public Monitor() {
 
-
 		JFrame guiFrame = new JFrame();
 
 		//make sure the program exits when the frame closes
@@ -39,26 +38,44 @@ public class Monitor {
 				"80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
 				};
 
+		String[] statusOptions = { "Off", "On" };
+		
 		//The first JPanel contains a JLabel and JCombobox
 		final JPanel mainPanel = new JPanel();
-		JLabel targetL = new JLabel("Target Temperature:");
-		JComboBox targetCB = new JComboBox(targetTempOptions);
 
+		JLabel statusL = new JLabel("System Status:");
+		final JComboBox statusCB = new JComboBox(statusOptions);
+		statusCB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+            	System.out.println("Change System Status due to event:" + statusCB.getSelectedIndex());
+            }
+        });
+		
+		JLabel targetL = new JLabel("Target Temperature:");
+		final JComboBox targetCB = new JComboBox(targetTempOptions);
+		targetCB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+            	System.out.println("Change Target Temp due to event:" + targetCB.getSelectedIndex());
+            }
+        });
+		
 		JLabel currentL = new JLabel("Current Temperature:");
 		JLabel currentT = new JLabel("?");
 		
-		
+		mainPanel.add(statusL);
+		mainPanel.add(statusCB);
 		mainPanel.add(targetL);
 		mainPanel.add(targetCB);
 		mainPanel.add(currentL);
 		mainPanel.add(currentT);
 
-		//The JFrame uses the BorderLayout layout manager.
-		//Put the two JPanels and JButton in different areas.
-		guiFrame.add(mainPanel, BorderLayout.NORTH);
+		guiFrame.add(mainPanel);
 
 		//make sure the JFrame is visible
 		guiFrame.setVisible(true);
 
+		new UpdateThread();
 	}
 }

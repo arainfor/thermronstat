@@ -30,6 +30,7 @@ public class Main {
 		Options options = new Options();
 		options.addOption("help", false, "This message isn't very helpful");
 		options.addOption("mkdirs", false, "Create missing paths");
+		options.addOption("monitor", false, "Start GUI Monitor");
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine cmd = null;
@@ -71,7 +72,9 @@ public class Main {
 		System.out.println("Relay Control File: " + relayVFIO);
 		System.out.println("Status Control File: " + statusVFIO);
 		
-		new Monitor();
+		if (cmd != null && cmd.hasOption("monitor")) {
+			new Monitor();
+		}
 		
 		// Main entry point to launch the program
 		new PollThread(statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO);
