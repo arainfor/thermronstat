@@ -73,7 +73,7 @@ public class Main {
 		System.out.println("Status Control File: " + statusVFIO);
 		
 		if (cmd != null && cmd.hasOption("monitor")) {
-			new Monitor();
+			new Monitor(statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO);
 		}
 		
 		// Main entry point to launch the program
