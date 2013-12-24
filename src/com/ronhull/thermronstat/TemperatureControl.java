@@ -8,10 +8,6 @@
  */
 package com.ronhull.thermronstat;
 
-import org.slf4j.Logger;
-
-import com.arainfor.util.logger.AppLogger;
-
 /**
  * @author arainfor
  *
@@ -24,10 +20,8 @@ public class TemperatureControl {
 	private double _control;
 	private double _ambient;
 	private double _anticipator;
-	//private Logger _logger;
 
 	public TemperatureControl(double target, double control, double ambient, double anticipator, boolean running) {
-		//_logger = new AppLogger().getLogger(this.getClass().getName());
 		_target = target;
 		_control = control;
 		_ambient = ambient;
