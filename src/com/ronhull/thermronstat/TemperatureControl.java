@@ -18,6 +18,7 @@ import com.arainfor.util.logger.AppLogger;
  */
 public class TemperatureControl {
 
+	protected final boolean HEAT_ONLY = true;
 	private boolean _running;
 	private double _target;
 	private double _control;
@@ -39,6 +40,9 @@ public class TemperatureControl {
 	 * @return
 	 */
 	public boolean isHeat() {
+		if (HEAT_ONLY)
+			return HEAT_ONLY;
+		
 		if (_target > _ambient)
 			return true;
 		return false;

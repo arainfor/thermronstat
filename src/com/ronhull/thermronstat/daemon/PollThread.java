@@ -33,7 +33,7 @@ public class PollThread {
 		    public void run() {
 		    	_logger.info("Turning OFF HVAC...");
 		    	try {
-		    		piGPIO.set(false);
+		    		piGPIO.setValue(false);
 		    		//_relayVFIO.write(0);
 					_statusVFIO.write(0);
 				} catch (IOException e) {
@@ -70,7 +70,7 @@ public class PollThread {
 
 				if (systemStatus == 0) {
 					if (relayPosistion != 0) { // turn off the relay if user wants it off!
-						piGPIO.set(false);
+						piGPIO.setValue(false);
 						//relayVFIO.write(0);
 					}
 					continue;
@@ -106,9 +106,9 @@ public class PollThread {
 				if (relayPosistion != relayValue) {
 					//relayVFIO.write(relayValue);
 					if (relayValue > 0) 
-						piGPIO.set(true);
+						piGPIO.setValue(true);
 					else
-						piGPIO.set(false);
+						piGPIO.setValue(false);
 					_logger.debug("***************");
 					_logger.debug("heat mode? " + controller.isHeat());
 					_logger.debug("target_temp=" + targetTemp);

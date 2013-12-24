@@ -17,40 +17,26 @@ public class PiGPIO {
     static final String GPIO_ON = "1";
     static final String GPIO_OFF = "0";
 
-    FileWriter commandFile;
+    protected FileWriter commandFile;
     
     public PiGPIO (String pin) {
         try {
             
             /*** Init GPIO port for output ***/
-            
-            // Open file handles to GPIO port unexport and export controls
-            FileWriter unexportFile = new FileWriter("/sys/class/gpio/unexport");
-            FileWriter exportFile = new FileWriter("/sys/class/gpio/export");
 
-         // Reset the port
+            // Reset the port
             File exportFileCheck = new File("/sys/class/gpio/gpio"+pin);
             if (exportFileCheck.exists()) {
-            	unexportFile.write(pin);
-            	unexportFile.flush();
+                unExport(pin);
             }            
+            
             // Set the port for use
-            exportFile.write(pin);   
-            exportFile.flush();
+            export(pin);
 
-            // Open file handle to port input/output control
-            FileWriter directionFile =
-                    new FileWriter("/sys/class/gpio/gpio"+pin+"/direction");
-            
-            // Set port for output
-            directionFile.write(GPIO_OUT);
-            directionFile.flush();
-            
-            /*** Send commands to GPIO port ***/
+            setDirection(pin, GPIO_OUT);
             
             // Open file handle to issue commands to GPIO port
-            commandFile = new FileWriter("/sys/class/gpio/gpio"+pin+
-                    "/value");
+            commandFile = new FileWriter("/sys/class/gpio/gpio" + pin + "/value");
             
 
         } catch (IOException ioe) {
@@ -58,8 +44,33 @@ public class PiGPIO {
         }
     }
 
- 
-    public void set(Boolean value) throws IOException {
+    public void unExport(String pin) throws IOException {
+        FileWriter unexportFile = new FileWriter("/sys/class/gpio/unexport");
+
+    	unexportFile.write(pin);
+    	unexportFile.flush();
+    	unexportFile.close();
+    }
+
+    public void export(String pin) throws IOException {
+        FileWriter exportFile = new FileWriter("/sys/class/gpio/export");
+
+        exportFile.write(pin);   
+        exportFile.flush();
+        exportFile.close();
+    }
+
+    public void setDirection(String pin, String direction) throws IOException {
+        // Open file handle to port input/output control
+        FileWriter directionFile = new FileWriter("/sys/class/gpio/gpio"+pin+"/direction");
+        
+        // Set port for output
+        directionFile.write(GPIO_OUT);
+        directionFile.flush();
+        directionFile.close();
+    }
+    
+    public void setValue(Boolean value) throws IOException {
     	if (value) {
     		commandFile.write(GPIO_ON);
     	} else {
@@ -76,7 +87,7 @@ public class PiGPIO {
     	String gpioChannel = "17";
     	PiGPIO pigpio = new PiGPIO(gpioChannel);
     	try {
-			pigpio.set(true);
+			pigpio.setValue(true);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -85,9 +96,4 @@ public class PiGPIO {
     	
     }
 
-
-	public ValueFileIO isSet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
