@@ -7,8 +7,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 
-import com.arainfor.util.file.io.PiGPIO;
 import com.arainfor.util.file.io.ValueFileIO;
+import com.arainfor.util.file.io.gpio.PiGPIO;
 import com.arainfor.util.logger.AppLogger;
 import com.ronhull.thermronstat.TemperatureControl;
 
@@ -16,24 +16,34 @@ import com.ronhull.thermronstat.TemperatureControl;
  * @author arainfor
  *
  */
-public class PollThread {
+public class PollThread extends Thread {
 	
 	protected Logger _logger;
-	protected ValueFileIO _relayVFIO;
-	protected ValueFileIO _statusVFIO;
+	protected PiGPIO _heatPiGPIO;
+	protected ValueFileIO _statusVFIO, _relayVFIO, _targetVFIO, _indoorVFIO, _outdoorVFIO;
+	protected int _sleep;
 	
-	public PollThread(final PiGPIO piGPIO, ValueFileIO statusVFIO, ValueFileIO relayVFIO, ValueFileIO indoorVFIO, ValueFileIO outdoorVFIO, ValueFileIO targetVFIO) {
+	public PollThread(int sleep, final PiGPIO heatPiGPIO, ValueFileIO statusVFIO, ValueFileIO relayVFIO, ValueFileIO indoorVFIO, ValueFileIO outdoorVFIO, ValueFileIO targetVFIO) {
+		
+		super();
+		
+		_sleep = sleep;
+		_heatPiGPIO = heatPiGPIO;
+		_statusVFIO = statusVFIO;
+		_relayVFIO = relayVFIO;  
+		_indoorVFIO = indoorVFIO;
+		_outdoorVFIO = outdoorVFIO;
+		_targetVFIO = targetVFIO;
 		
 		_logger = new AppLogger().getLogger(this.getClass().getName());
 		_logger.info(this.getClass().getName() + " starting...");
-
-		_relayVFIO = relayVFIO;  // We keep a copy of the relay file object for emergency shutdown!
-		_statusVFIO = statusVFIO;
+		
+		// Add hook to turn off everything...
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 		    public void run() {
 		    	_logger.info("Turning OFF HVAC...");
 		    	try {
-		    		piGPIO.setValue(false);
+		    		heatPiGPIO.setValue(false);
 		    		//_relayVFIO.write(0);
 					_statusVFIO.write(0);
 				} catch (IOException e) {
@@ -42,12 +52,16 @@ public class PollThread {
 		    	_logger.info(this.getClass().getName() + " terminated...");		    }
 		}));
 
+	}
+	
+	@Override
+	public void run() {
 		int lastSystemStatus = -1;
 
 		while (true) {
 
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(_sleep);
 			} catch (InterruptedException e) {
 				_logger.error(e.toString());
 				continue;
@@ -56,8 +70,8 @@ public class PollThread {
 			int relayPosistion = 0;
 			int systemStatus = 0;
 			try {
-				systemStatus = (int)statusVFIO.read();
-				relayPosistion = (int)relayVFIO.read();
+				systemStatus = (int)_statusVFIO.readDouble();
+				relayPosistion = (int)_relayVFIO.readDouble();
 				
 				// Display a message if we toggled systemStatus.
 				if (systemStatus != lastSystemStatus) {
@@ -70,7 +84,7 @@ public class PollThread {
 
 				if (systemStatus == 0) {
 					if (relayPosistion != 0) { // turn off the relay if user wants it off!
-						piGPIO.setValue(false);
+						_heatPiGPIO.setValue(false);
 						//relayVFIO.write(0);
 					}
 					continue;
@@ -85,13 +99,9 @@ public class PollThread {
 			// read all the known values
 			double controlTemp, ambientTemp, targetTemp = 0;
 			try {
-				targetTemp = targetVFIO.read();
-				controlTemp = indoorVFIO.read();
-				ambientTemp = outdoorVFIO.read();
-//				_logger.debug("***************");
-//				_logger.debug("target_temp=" + target);
-//				_logger.debug("indoor_temp=" + control);
-//				_logger.debug("outdoor_temp=" + ambient);
+				targetTemp = _targetVFIO.readDouble();
+				controlTemp = _indoorVFIO.readDouble();
+				ambientTemp = _outdoorVFIO.readDouble();
 			} catch (IOException ioe) {
 				_logger.error(ioe.toString());
 				ioe.printStackTrace();
@@ -104,11 +114,10 @@ public class PollThread {
 			
 			try {
 				if (relayPosistion != relayValue) {
-					//relayVFIO.write(relayValue);
 					if (relayValue > 0) 
-						piGPIO.setValue(true);
+						_heatPiGPIO.setValue(true);
 					else
-						piGPIO.setValue(false);
+						_heatPiGPIO.setValue(false);
 					_logger.debug("***************");
 					_logger.debug("heat mode? " + controller.isHeat());
 					_logger.debug("target_temp=" + targetTemp);
@@ -122,7 +131,5 @@ public class PollThread {
 				continue;
 			}
 		}
-		
 	}
-	
 }
