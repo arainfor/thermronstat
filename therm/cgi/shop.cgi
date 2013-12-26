@@ -37,7 +37,7 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 
 <body bgcolor="#A4A4A4">
    <h2>
-   <p align="center" style="font-size:60px">Thermronstat Control</p>
+   <p align="center" style="font-size:60px">ThermRonStat Control</p>
    </h2>
    
    <hr>
