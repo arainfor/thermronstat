@@ -3,6 +3,8 @@
  */
 package com.ronhull.thermronstat.daemon;
 
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -11,8 +13,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.arainfor.util.file.io.Path;
-import com.arainfor.util.file.io.PiGPIO;
 import com.arainfor.util.file.io.ValueFileIO;
+import com.arainfor.util.file.io.gpio.Direction;
+import com.arainfor.util.file.io.gpio.PiGPIO;
+import com.arainfor.util.file.io.gpio.Pin;
 import com.ronhull.thermronstat.gui.Monitor;
 
 /**
@@ -22,15 +26,20 @@ import com.ronhull.thermronstat.gui.Monitor;
 public class Main {
 
 	protected static final String IO_BASE_FS = "/var/thermronstat";
+	private static String APPLICATION_NAME = "ThermRonStat";
+	private static int APPLICATION_VERSION_MAJOR = 1;
+	private static int APPLICATION_VERSION_MINOR = 0;
+	private static int APPLICATION_VERSION_BUILD = 5;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 
-		System.err.println("The ThermRonStat v1.0");
+		//System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
 		Options options = new Options();
 		options.addOption("help", false, "This message isn't very helpful");
+		options.addOption("version", false, "Print the version number");
 		options.addOption("mkdirs", false, "Create missing paths");
 		options.addOption("monitor", false, "Start GUI Monitor");
 
@@ -40,8 +49,11 @@ public class Main {
 			cmd = parser.parse(options, args);
 			if (cmd.hasOption("help")) {
 				HelpFormatter hf = new HelpFormatter();
-				hf.printHelp("thermronstat", options);
+				hf.printHelp(APPLICATION_NAME , options);
 				return;
+			}
+			if (cmd.hasOption("version")) {
+				System.out.println("The " + APPLICATION_NAME +" v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
 			}
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -49,7 +61,13 @@ public class Main {
 		}
 		
 		// setup gpio
-		PiGPIO piGPIO = new PiGPIO("17");
+		PiGPIO heatPiGPIO = null;
+		try {
+			heatPiGPIO = new PiGPIO(new Pin(17), Direction.OUT);
+		} catch (IOException ioe) {
+			System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
+			System.exit(-1);
+		}
 		
 		Path targetPath = new Path(IO_BASE_FS + "/target");
 		Path indoorPath = new Path(IO_BASE_FS + "/temperature/" + 0);
@@ -82,9 +100,8 @@ public class Main {
 		}
 		
 		// Main entry point to launch the program
-		new PollThread(piGPIO, statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO);
+		new PollThread(Integer.parseInt(System.getProperty("poll.sleep", "1000")), heatPiGPIO, statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO).run();
 		
 	}
-
 
 }

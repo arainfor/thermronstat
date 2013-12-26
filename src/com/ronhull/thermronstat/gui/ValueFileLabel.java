@@ -33,7 +33,7 @@ public class ValueFileLabel extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		
 		try {
-			valueLabel.setText(_vfioMonitor.read() + "");
+			valueLabel.setText(_vfioMonitor.readDouble() + "");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

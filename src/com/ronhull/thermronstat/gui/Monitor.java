@@ -36,7 +36,9 @@ public class Monitor {
 		guiFrame.setLocationRelativeTo(null);
 
 		//Options for the JComboBox 
-		String[] targetTempOptions = { "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
+		String[] targetTempOptions = { 
+				"40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+				"50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
 				"60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
 				"70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
 				"80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
@@ -51,7 +53,7 @@ public class Monitor {
 		final JComboBox statusCB = new JComboBox(statusOptions);
 		String systemStatusValue = "Off";
 		try {
-			if (statusVFIO.read() != 0.0) {
+			if (statusVFIO.readDouble() != 0.0) {
 				systemStatusValue = "On";
 			}
 		} catch (IOException e1) {
@@ -83,7 +85,7 @@ public class Monitor {
 		JLabel targetL = new JLabel("Target Temperature:");
 		final JComboBox targetCB = new JComboBox(targetTempOptions);
 		try {
-			targetCB.setSelectedItem(new Integer((int)targetVFIO.read()).toString());
+			targetCB.setSelectedItem(new Integer((int)targetVFIO.readDouble()).toString());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

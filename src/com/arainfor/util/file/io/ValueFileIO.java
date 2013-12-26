@@ -1,5 +1,5 @@
 /**
- * 
+ * Utility class that can read/write values on a single line of a file.
  */
 package com.arainfor.util.file.io;
 
@@ -23,6 +23,10 @@ public class ValueFileIO {
 		_filename = filename;
 	}
 	
+	public void write(boolean value) throws IOException {
+		write(value ? 1.0 : 0.0);
+	}
+	
 	public void write(double value) throws IOException {
 		FileWriter fstream = new FileWriter(_filename, false);
 		BufferedWriter out = new BufferedWriter(fstream);
@@ -30,7 +34,11 @@ public class ValueFileIO {
 		out.close();
 	}
 
-	public double read() throws IOException {
+	public boolean read() throws IOException {
+		return readDouble() != 0.0;
+	}
+	
+	public double readDouble() throws IOException {
 		InputStream fis;
 		BufferedReader br;
 		String  line;
