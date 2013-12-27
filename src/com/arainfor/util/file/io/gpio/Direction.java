@@ -11,12 +11,12 @@ public enum Direction {
 
 	IN() {
 		public String get() {
-			return "IN";
+			return "in";
 		}
 	},
 	OUT() {
 		public String get() {
-			return "OUT";
+			return "out";
 		}
 	}
 	;

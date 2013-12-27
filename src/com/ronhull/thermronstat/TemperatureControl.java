@@ -50,22 +50,22 @@ public class TemperatureControl {
 		if (isHeat()) {
 			//_logger.debug("Heat mode");
 			if (_running) {
-				if (_control + _anticipator < _target) {
+				if (_control < _target) {
 					return 1;
 				}
 			} else {
-				if (_control < _target) {
+				if (_control < _target - _anticipator) {
 					return 1;
 				}
 			}
 		} else {
 			//_logger.debug("Cool mode");
 			if (_running) {
-				if (_control - _anticipator > _target) {
+				if (_control > _target) {
 					return 1;
 				}
 			} else {
-				if (_control > _target) {
+				if (_control > _target + _anticipator) {
 					return 1;
 				}
 			}

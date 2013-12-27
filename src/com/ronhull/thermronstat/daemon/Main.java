@@ -66,6 +66,7 @@ public class Main {
 			heatPiGPIO = new PiGPIO(new Pin(17), Direction.OUT);
 		} catch (IOException ioe) {
 			System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
+			ioe.printStackTrace();
 			System.exit(-1);
 		}
 		

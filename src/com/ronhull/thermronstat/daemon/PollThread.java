@@ -103,7 +103,7 @@ public class PollThread extends Thread {
 				controlTemp = _indoorVFIO.readDouble();
 				ambientTemp = _outdoorVFIO.readDouble();
 			} catch (IOException ioe) {
-				_logger.error(ioe.toString());
+				_logger.error("Temperature Read error!: " + ioe.toString());
 				ioe.printStackTrace();
 				continue;
 			}
@@ -126,7 +126,7 @@ public class PollThread extends Thread {
 					_logger.info("Relay changed to " + relayValue);
 				}
 			} catch (IOException e) {
-				_logger.error(e.toString());
+				_logger.error("Relay Control Error: " + e.toString());
 				e.printStackTrace();
 				continue;
 			}
