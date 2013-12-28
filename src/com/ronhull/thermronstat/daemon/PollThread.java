@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.PiGPIO;
+import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.arainfor.util.logger.AppLogger;
 import com.ronhull.thermronstat.TemperatureControl;
 
@@ -20,10 +21,11 @@ public class PollThread extends Thread {
 	
 	protected Logger _logger;
 	protected PiGPIO _heatPiGPIO;
-	protected ValueFileIO _statusVFIO, _relayVFIO, _targetVFIO, _indoorVFIO, _outdoorVFIO;
+	protected ValueFileIO _statusVFIO, _relayVFIO, _targetVFIO; 
+	protected DS18B20 _indoorSensor, _outdoorSensor;
 	protected int _sleep;
 	
-	public PollThread(int sleep, final PiGPIO heatPiGPIO, ValueFileIO statusVFIO, ValueFileIO relayVFIO, ValueFileIO indoorVFIO, ValueFileIO outdoorVFIO, ValueFileIO targetVFIO) {
+	public PollThread(int sleep, final PiGPIO heatPiGPIO, ValueFileIO statusVFIO, ValueFileIO relayVFIO, DS18B20 indoorSensor, DS18B20 outdoorSensor, ValueFileIO targetVFIO) {
 		
 		super();
 		
@@ -31,8 +33,8 @@ public class PollThread extends Thread {
 		_heatPiGPIO = heatPiGPIO;
 		_statusVFIO = statusVFIO;
 		_relayVFIO = relayVFIO;  
-		_indoorVFIO = indoorVFIO;
-		_outdoorVFIO = outdoorVFIO;
+		_indoorSensor = indoorSensor;
+		_outdoorSensor = outdoorSensor;
 		_targetVFIO = targetVFIO;
 		
 		_logger = new AppLogger().getLogger(this.getClass().getName());
@@ -98,15 +100,19 @@ public class PollThread extends Thread {
 			
 			// read all the known values
 			double controlTemp, ambientTemp, targetTemp = 0;
+			
 			try {
 				targetTemp = _targetVFIO.readDouble();
-				controlTemp = _indoorVFIO.readDouble();
-				ambientTemp = _outdoorVFIO.readDouble();
+				controlTemp = _indoorSensor.getTempF();
+				ambientTemp = _outdoorSensor.getTempF();
 			} catch (IOException ioe) {
 				_logger.error("Temperature Read error!: " + ioe.toString());
 				ioe.printStackTrace();
 				continue;
 			}
+			
+			_logger.debug("target_temp=" + targetTemp);
+			_logger.debug("indoor_temp=" + controlTemp);
 			
 			// the real decision is here!
 			TemperatureControl controller = new TemperatureControl(targetTemp, controlTemp, ambientTemp, 0.5, relayPosistion > 0);

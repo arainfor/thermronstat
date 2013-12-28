@@ -17,6 +17,7 @@ import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.Direction;
 import com.arainfor.util.file.io.gpio.PiGPIO;
 import com.arainfor.util.file.io.gpio.Pin;
+import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.ronhull.thermronstat.gui.Monitor;
 
 /**
@@ -71,37 +72,37 @@ public class Main {
 		}
 		
 		Path targetPath = new Path(IO_BASE_FS + "/target");
-		Path indoorPath = new Path(IO_BASE_FS + "/temperature/" + 0);
-		Path outdoorPath = new Path(IO_BASE_FS + "/temperature/" + 1);
 		Path relayPath = new Path(IO_BASE_FS + "/relay");
 		Path statusPath = new Path(IO_BASE_FS + "/status");
 		
 		if (cmd != null && cmd.hasOption("mkdirs")) {
 			targetPath.build();
-			indoorPath.build();
-			outdoorPath.build();
 			relayPath.build();
 			statusPath.build();
 		}
 		
 		ValueFileIO targetVFIO = new ValueFileIO(targetPath.getAbsolutePath()+ "/0");
-		ValueFileIO indoorVFIO = new ValueFileIO(indoorPath.getAbsolutePath() + "/f");
-		ValueFileIO outdoorVFIO = new ValueFileIO(outdoorPath.getAbsolutePath() + "/f");
 		ValueFileIO relayVFIO = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
 		ValueFileIO statusVFIO = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
+
+		String indoorFilename = "/sys/bus/w1/devices/28-0000057b7552/w1_slave";
+		String outdoorFilename = "/sys/bus/w1/devices/28-0000054d6b25/w1_slave";
+		
+		DS18B20 indoorSensor  = new DS18B20(indoorFilename );
+		DS18B20 outdoorSensor = new DS18B20(outdoorFilename );
 		
 		System.out.println("Target Temperature File: " + targetVFIO);
-		System.out.println("Indoor Temperature File: " + indoorVFIO);
-		System.out.println("Outdoor Temperature File: " + outdoorVFIO);
+		System.out.println("Indoor Temperature File: " + indoorFilename);
+		System.out.println("Outdoor Temperature File: " + outdoorFilename);
 		System.out.println("Relay Control File: " + relayVFIO);
 		System.out.println("Status Control File: " + statusVFIO);  // User want's us on or off
 		
-		if (cmd != null && cmd.hasOption("monitor")) {
-			new Monitor(statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO);
-		}
+//		if (cmd != null && cmd.hasOption("monitor")) {
+//			new Monitor(statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO);
+//		}
 		
 		// Main entry point to launch the program
-		new PollThread(Integer.parseInt(System.getProperty("poll.sleep", "1000")), heatPiGPIO, statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO).run();
+		new PollThread(Integer.parseInt(System.getProperty("poll.sleep", "1000")), heatPiGPIO, statusVFIO, relayVFIO, indoorSensor, outdoorSensor, targetVFIO).run();
 		
 	}
 
