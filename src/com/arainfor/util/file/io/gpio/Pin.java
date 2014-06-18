@@ -19,7 +19,7 @@ public class Pin {
 	public Pin(int value)  throws NumberFormatException {
 		_value = value;
 		if (_value != 17)
-			throw new NullPointerException("GPIO 17 is only supported right now!");
+			throw new NumberFormatException("GPIO 17 is only supported right now!");
 	}
 	
 	public int getValue() {

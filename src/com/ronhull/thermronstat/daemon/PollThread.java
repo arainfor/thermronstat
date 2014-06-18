@@ -111,9 +111,6 @@ public class PollThread extends Thread {
 				continue;
 			}
 			
-			_logger.debug("target_temp=" + targetTemp);
-			_logger.debug("indoor_temp=" + controlTemp);
-			
 			// the real decision is here!
 			TemperatureControl controller = new TemperatureControl(targetTemp, controlTemp, ambientTemp, 0.5, relayPosistion > 0);
 			int relayValue = controller.enable();
