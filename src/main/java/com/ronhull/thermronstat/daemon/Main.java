@@ -3,22 +3,15 @@
  */
 package com.ronhull.thermronstat.daemon;
 
-import java.io.IOException;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.Direction;
 import com.arainfor.util.file.io.gpio.PiGPIO;
 import com.arainfor.util.file.io.gpio.Pin;
 import com.arainfor.util.file.io.thermometer.DS18B20;
-import com.ronhull.thermronstat.gui.Monitor;
+import org.apache.commons.cli.*;
+
+import java.io.IOException;
 
 /**
  * @author arainfor

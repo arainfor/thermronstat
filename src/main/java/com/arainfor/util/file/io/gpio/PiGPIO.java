@@ -37,6 +37,22 @@ public class PiGPIO {
     	commandFile = new FileWriter("/sys/class/gpio/gpio" + pin + "/value");
     }
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+
+        try {
+            PiGPIO pigpio = new PiGPIO(new Pin(17), Direction.OUT);
+            pigpio.setValue(true);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+    }
+
     public void unExport(Pin pin) throws IOException {
         FileWriter unexportFile = new FileWriter("/sys/class/gpio/unexport");
 
@@ -48,7 +64,7 @@ public class PiGPIO {
     public void export(Pin pin) throws IOException {
         FileWriter exportFile = new FileWriter("/sys/class/gpio/export");
 
-        exportFile.write(pin.getName());   
+        exportFile.write(pin.getName());
         exportFile.flush();
         exportFile.close();
     }
@@ -56,7 +72,7 @@ public class PiGPIO {
     public void setDirection(Pin pin, Direction direction) throws IOException {
         // Open file handle to port input/output control
         FileWriter directionFile = new FileWriter("/sys/class/gpio/gpio" + pin.getName() + "/direction");
-        
+
         // Set port for output
         directionFile.write(direction.get());
         directionFile.flush();
@@ -70,22 +86,6 @@ public class PiGPIO {
     		commandFile.write(GPIO_OFF);
     	}
     	commandFile.flush();
-    }
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-    	
-    	try {
-    		PiGPIO pigpio = new PiGPIO(new Pin(17), Direction.OUT);
-			pigpio.setValue(true);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	
     }
 
 }

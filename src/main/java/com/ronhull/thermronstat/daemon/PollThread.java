@@ -3,15 +3,14 @@
  */
 package com.ronhull.thermronstat.daemon;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-
 import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.PiGPIO;
 import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.arainfor.util.logger.AppLogger;
 import com.ronhull.thermronstat.TemperatureControl;
+import org.slf4j.Logger;
+
+import java.io.IOException;
 
 /**
  * @author arainfor
