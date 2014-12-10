@@ -125,7 +125,7 @@ public class PollThread extends Thread {
 					_logger.debug("target_temp=" + targetTemp);
 					_logger.debug("indoor_temp=" + controlTemp);
 					_logger.debug("outdoor_temp=" + ambientTemp);
-					_logger.info("Relay changed to " + relayValue);
+					_logger.info("Relay changed from:" + relayPosistion + " to:" + relayValue);
 				}
 			} catch (IOException e) {
 				_logger.error("Relay Control Error: " + e.toString());
