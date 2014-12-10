@@ -11,7 +11,10 @@ import com.arainfor.util.file.io.gpio.Pin;
 import com.arainfor.util.file.io.thermometer.DS18B20;
 import org.apache.commons.cli.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * @author arainfor
@@ -26,9 +29,9 @@ public class Main {
 	private static int APPLICATION_VERSION_BUILD = 5;
 
 	/**
-	 * @param args
+	 * @param args The Program Arguments
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		//System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
 		Options options = new Options();
@@ -38,7 +41,7 @@ public class Main {
 		options.addOption("monitor", false, "Start GUI Monitor");
 
 		CommandLineParser parser = new GnuParser();
-		CommandLine cmd = null;
+		CommandLine cmd;
 		try {
 			cmd = parser.parse(options, args);
 			if (cmd.hasOption("help")) {
@@ -63,12 +66,22 @@ public class Main {
 			ioe.printStackTrace();
 			System.exit(-1);
 		}
-		
+
+		String propFileName = System.getProperty("config.file", "thermostat.properties");
+		InputStream inputStream = options.getClass().getClassLoader().getResourceAsStream(propFileName);
+		Properties prop = new Properties();
+
+		if (inputStream != null) {
+			prop.load(inputStream);
+		} else {
+			throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+		}
+
 		Path targetPath = new Path(IO_BASE_FS + "/target");
 		Path relayPath = new Path(IO_BASE_FS + "/relay");
 		Path statusPath = new Path(IO_BASE_FS + "/status");
-		
-		if (cmd != null && cmd.hasOption("mkdirs")) {
+
+		if (cmd.hasOption("mkdirs")) {
 			targetPath.build();
 			relayPath.build();
 			statusPath.build();
@@ -78,17 +91,23 @@ public class Main {
 		ValueFileIO relayVFIO = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
 		ValueFileIO statusVFIO = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
 
-		String indoorFilename = "/sys/bus/w1/devices/28-0000057b7552/w1_slave";
-		String outdoorFilename = "/sys/bus/w1/devices/28-0000054d6b25/w1_slave";
-		
-		DS18B20 indoorSensor  = new DS18B20(indoorFilename );
-		DS18B20 outdoorSensor = new DS18B20(outdoorFilename );
-		
+		String indoorFilename = "/sys/bus/w1/devices/" + prop.getProperty("0.source") + "/w1_slave";
+		String outdoorFilename = "/sys/bus/w1/devices/" + prop.getProperty("1.source") + "/w1_slave";
+		String plenumFilename = "/sys/bus/w1/devices/" + prop.getProperty("2.source") + "/w1_slave";
+		String returnFilename = "/sys/bus/w1/devices/" + prop.getProperty("3.source") + "/w1_slave";
+
+		DS18B20 indoorSensor = new DS18B20(indoorFilename);
+		DS18B20 outdoorSensor = new DS18B20(outdoorFilename);
+		DS18B20 plenumSensor = new DS18B20(indoorFilename);
+		DS18B20 returnSensor = new DS18B20(indoorFilename);
+
 		System.out.println("Target Temperature File: " + targetVFIO);
 		System.out.println("Indoor Temperature File: " + indoorFilename);
 		System.out.println("Outdoor Temperature File: " + outdoorFilename);
+		System.out.println("Plenum Temperature File: " + plenumFilename);
+		System.out.println("Return Temperature File: " + returnFilename);
 		System.out.println("Relay Control File: " + relayVFIO);
-		System.out.println("Status Control File: " + statusVFIO);  // User want's us on or off
+		System.out.println("System Available Control File: " + statusVFIO);  // User want's us on or off
 		
 //		if (cmd != null && cmd.hasOption("monitor")) {
 //			new Monitor(statusVFIO, relayVFIO, indoorVFIO, outdoorVFIO, targetVFIO);
