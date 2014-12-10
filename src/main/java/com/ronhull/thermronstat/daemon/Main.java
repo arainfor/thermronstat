@@ -11,6 +11,7 @@ import com.arainfor.util.file.io.gpio.Pin;
 import com.arainfor.util.file.io.thermometer.DS18B20;
 import org.apache.commons.cli.*;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +73,7 @@ public class Main {
 		if (cmd.getOptionValue("config") != null)
 			propFileName = cmd.getOptionValue("config");
 
-		InputStream inputStream = options.getClass().getClassLoader().getResourceAsStream(propFileName);
+		InputStream inputStream = new FileInputStream(propFileName);
 		Properties prop = new Properties();
 
 		if (inputStream != null) {
