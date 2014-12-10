@@ -39,6 +39,7 @@ public class Main {
 		options.addOption("version", false, "Print the version number");
 		options.addOption("mkdirs", false, "Create missing paths");
 		options.addOption("monitor", false, "Start GUI Monitor");
+		options.addOption("config", true, "The configuration file");
 
 		CommandLineParser parser = new GnuParser();
 		CommandLine cmd;
@@ -67,7 +68,10 @@ public class Main {
 			System.exit(-1);
 		}
 
-		String propFileName = System.getProperty("config.file", "thermostat.properties");
+		String propFileName = "thermostat.properties";
+		if (cmd.getOptionValue("config") != null)
+			propFileName = cmd.getOptionValue("config");
+
 		InputStream inputStream = options.getClass().getClassLoader().getResourceAsStream(propFileName);
 		Properties prop = new Properties();
 
