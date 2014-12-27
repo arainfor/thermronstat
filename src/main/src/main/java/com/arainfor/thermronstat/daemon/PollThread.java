@@ -1,9 +1,9 @@
 /**
  * 
  */
-package com.arainfor.thermronstat.thermronstat.daemon;
+package com.arainfor.thermronstat.daemon;
 
-import com.arainfor.thermronstat.thermronstat.H1TemperatureControl;
+import com.arainfor.thermronstat.H1TemperatureControl;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;

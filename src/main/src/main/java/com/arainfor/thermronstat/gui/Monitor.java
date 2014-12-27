@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.arainfor.thermronstat.thermronstat.gui;
+package com.arainfor.thermronstat.gui;
 
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
@@ -40,7 +40,7 @@ public class Monitor {
     private static int APPLICATION_VERSION_MINOR = 0;
     private static int APPLICATION_VERSION_BUILD = 5;
 
-    public Monitor(final ValueFileIO statusVFIO, final ValueFileIO relayTempVFIO, DS18B20 indoorSensor, DS18B20 outdoorSensor, final ValueFileIO targetVFIO) {
+    public Monitor() {
 
         JFrame guiFrame = new JFrame();
 
@@ -70,7 +70,7 @@ public class Monitor {
         final JComboBox statusCB = new JComboBox(statusOptions);
         String systemStatusValue = "Off";
         try {
-            if (statusVFIO.read()) {
+            if (statusControl.read()) {
                 systemStatusValue = "On";
             }
         } catch (IOException e1) {
@@ -84,10 +84,10 @@ public class Monitor {
                 System.out.println("Change System Status due to event:" + statusCB.getSelectedItem());
                 try {
                     if (((String) statusCB.getSelectedItem()).equalsIgnoreCase("on"))
-                        statusVFIO.write(1.0);
+                        statusControl.write(1.0);
                     else {
-                        statusVFIO.write(0.0);
-                        relayTempVFIO.write(0.0);
+                        statusControl.write(0.0);
+                        stage1Control.write(0.0);
                     }
                 } catch (NumberFormatException e) {
                     // TODO Auto-generated catch block
@@ -102,7 +102,7 @@ public class Monitor {
         JLabel targetL = new JLabel("Target Temperature:");
         final JComboBox targetCB = new JComboBox(targetTempOptions);
         try {
-            targetCB.setSelectedItem(new Integer((int) targetVFIO.readDouble()).toString());
+            targetCB.setSelectedItem(new Integer((int) targetControl.readDouble()).toString());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -113,7 +113,7 @@ public class Monitor {
             public void actionPerformed(ActionEvent event) {
                 System.out.println("Change Target Temp: " + targetCB.getSelectedItem());
                 try {
-                    targetVFIO.write(Double.parseDouble((String) targetCB.getSelectedItem()));
+                    targetControl.write(Double.parseDouble((String) targetCB.getSelectedItem()));
                 } catch (NumberFormatException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -126,7 +126,9 @@ public class Monitor {
 
         SensorLabel indoorTemp = new SensorLabel("Indoor Temp.", indoorSensor);
         SensorLabel outdoorTemp = new SensorLabel("Outdoor Temp.", outdoorSensor);
-        ValueFileLabel relayValue = new ValueFileLabel("Running.", relayTempVFIO, true);
+        SensorLabel plenumTemp = new SensorLabel("Plenum Temp.", plenumSensor);
+        SensorLabel returnTemp = new SensorLabel("Return Temp.", returnSensor);
+        ValueFileLabel relayValue = new ValueFileLabel("Running:", stage1Control, true);
 
         mainPanel.add(relayValue);
         mainPanel.add(statusL);
@@ -135,6 +137,8 @@ public class Monitor {
         mainPanel.add(targetCB);
         mainPanel.add(indoorTemp);
         mainPanel.add(outdoorTemp);
+        mainPanel.add(plenumTemp);
+        mainPanel.add(returnTemp);
 
         guiFrame.add(mainPanel);
 
@@ -227,7 +231,7 @@ public class Monitor {
         System.out.println("System Available Control File: " + statusControl);  // User desired state of relay, on or off
 
 
-        new Monitor(statusControl, stage1Control, indoorSensor, outdoorSensor, targetControl);
+        new Monitor();
 
         //final ValueFileIO statusVFIO, final ValueFileIO relayTempVFIO, ValueFileIO indoorTempVFIO, ValueFileIO outdoorTempVFIO, final ValueFileIO targetVFIO
     }

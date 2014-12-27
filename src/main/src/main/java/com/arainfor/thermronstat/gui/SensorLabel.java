@@ -1,4 +1,4 @@
-package com.arainfor.thermronstat.thermronstat.gui;
+package com.arainfor.thermronstat.gui;
 
 import com.arainfor.util.file.io.thermometer.DS18B20;
 

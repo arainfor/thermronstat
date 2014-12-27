@@ -6,7 +6,7 @@
  * No external I/O should ever live here.  
  * 
  */
-package com.arainfor.thermronstat.thermronstat;
+package com.arainfor.thermronstat;
 
 /**
  * @author arainfor
