@@ -1,8 +1,10 @@
 /**
  * 
  */
-package com.ronhull.thermronstat.daemon;
+package com.arainfor.thermronstat.thermronstat.daemon;
 
+import com.arainfor.thermronstat.thermronstat.H1TemperatureControl;
+import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.Direction;
@@ -10,14 +12,10 @@ import com.arainfor.util.file.io.gpio.PiGPIO;
 import com.arainfor.util.file.io.gpio.Pin;
 import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.arainfor.util.logger.AppLogger;
-import com.ronhull.thermronstat.TemperatureControl;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -66,6 +64,15 @@ public class PollThread extends Thread {
 			}
 		}));
 
+		// setup gpio
+		try {
+			stage1Relay = new PiGPIO(new Pin(17), Direction.OUT);
+		} catch (IOException ioe) {
+			System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
+			ioe.printStackTrace();
+			System.exit(-1);
+		}
+
 	}
 
 	/**
@@ -102,27 +109,11 @@ public class PollThread extends Thread {
 		if (cmd.getOptionValue("config") != null)
 			propFileName = cmd.getOptionValue("config");
 
-		InputStream inputStream = new FileInputStream(propFileName);
-		Properties props = new Properties();
-
-		if (inputStream != null) {
-			props.load(inputStream);
-		} else {
-			throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
-		}
+		Properties props = new PropertiesLoader(propFileName).getProps();
 
 		// Append the system properties with our applicaton properties
 		props.putAll(System.getProperties());
 		System.setProperties(props);
-
-		// setup gpio
-		try {
-			stage1Relay = new PiGPIO(new Pin(17), Direction.OUT);
-		} catch (IOException ioe) {
-			System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
-			ioe.printStackTrace();
-			System.exit(-1);
-		}
 
 		String IO_BASE_FS = System.getProperty("thermronstat.IO_BASE_FS", "/var/thermronstat");
 
@@ -169,7 +160,7 @@ public class PollThread extends Thread {
 	@Override
 	public void run() {
 
-		int lastSystemStatus = -1;
+		boolean lastSystemStatus = false;
 
 		while (true) {
 
@@ -180,24 +171,24 @@ public class PollThread extends Thread {
 				continue;
 			}
 
-			int relayPosition = 0;
-			int systemStatus = 0;
+			boolean relayPosition = false;
+			boolean systemStatus = false;
 
 			try {
-				systemStatus = (int) statusControl.readDouble();
-				relayPosition = (int) stage1Control.readDouble();
+				systemStatus = statusControl.read();
+				relayPosition = stage1Control.read();
 
 				// Display a message if we toggled systemStatus.
 				if (systemStatus != lastSystemStatus) {
-					if (systemStatus == 0)
+					if (!systemStatus)
 						logger.info("Turning System OFF");
 					else
 						logger.info("Turning System ON");
 					lastSystemStatus = systemStatus;
 				}
 
-				if (systemStatus == 0) {
-					if (relayPosition != 0) { // turn off the relay if user wants it off!
+				if (!systemStatus) {
+					if (relayPosition) { // turn off the relay if user wants it off!
 						// TODO: call new method to turn off all outputs
 						stage1Relay.setValue(false);
 					}
@@ -224,24 +215,27 @@ public class PollThread extends Thread {
 			}
 
 			// the real decision is here!
-			TemperatureControl controller = new TemperatureControl(targetTemp, controlTemp, ambientTemp, 0.5, relayPosition > 0);
-			int relayValue = controller.enable();
+			H1TemperatureControl controller = new H1TemperatureControl(targetTemp, controlTemp, ambientTemp, 0.5, relayPosition);
+			boolean stage1Enable = controller.enable();
 
-			logSingle("Run?" + relayValue + " target:" + targetTemp + " controlTemp:" + controlTemp + " " + " relayPosition:" + relayPosition);
+			logSingle("Run?" + stage1Enable + " target:" + targetTemp + " controlTemp:" + controlTemp + " " + " relayPosition:" + relayPosition);
 
 			try {
-				if (relayPosition != relayValue) {
-					if (relayValue > 0)
+				if (relayPosition != stage1Enable) {
+					if (stage1Enable)
 						stage1Relay.setValue(true);
 					else
 						stage1Relay.setValue(false);
+
 					logger.debug("***************");
 					logger.debug("heat mode? " + controller.isHeat());
 					logger.debug("target_temp=" + targetTemp);
 					logger.debug("indoor_temp=" + controlTemp);
 					logger.debug("outdoor_temp=" + ambientTemp);
-					logger.info("Relay changed from:" + relayPosition + " to:" + relayValue);
-					stage1Control.write(relayValue);
+					logger.info("Relay changed from:" + relayPosition + " to:" + stage1Enable);
+
+					// Change to the new setting...
+					stage1Control.write(stage1Enable);
 				}
 			} catch (IOException e) {
 				logger.error("Relay Control Error: " + e.toString());
@@ -257,6 +251,5 @@ public class PollThread extends Thread {
 		logger.debug(msg);
 		oldSingleMsg = msg;
 	}
-
 
 }

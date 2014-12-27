@@ -6,13 +6,13 @@
  * No external I/O should ever live here.  
  * 
  */
-package com.ronhull.thermronstat;
+package com.arainfor.thermronstat.thermronstat;
 
 /**
  * @author arainfor
  *
  */
-public class TemperatureControl {
+public class H1TemperatureControl {
 
 	protected final boolean HEAT_ONLY = true;
 	private boolean _running;
@@ -21,7 +21,7 @@ public class TemperatureControl {
 	private double _ambient;
 	private double _anticipator;
 
-	public TemperatureControl(double target, double control, double ambient, double anticipator, boolean running) {
+	public H1TemperatureControl(double target, double control, double ambient, double anticipator, boolean running) {
 		_target = target;
 		_control = control;
 		_ambient = ambient;
@@ -46,30 +46,31 @@ public class TemperatureControl {
 	 * Returns if we should energized the relay depending on mode.
 	 * @return
 	 */
-	public int enable() {
+	public boolean enable() {
 		if (isHeat()) {
 			//_logger.debug("Heat mode");
 			if (_running) {
-				if (_control < _target) {
-					return 1;
+				// TODO: This logic should consider the current runtime and adjust anticipator
+				if (_control < _target - _anticipator) {
+					return true;
 				}
 			} else {
-				if (_control < _target - _anticipator) {
-					return 1;
+				if (_control < _target) {
+					return true;
 				}
 			}
 		} else {
 			//_logger.debug("Cool mode");
 			if (_running) {
-				if (_control > _target) {
-					return 1;
+				if (_control > _target + _anticipator) {
+					return true;
 				}
 			} else {
-				if (_control > _target + _anticipator) {
-					return 1;
+				if (_control > _target) {
+					return true;
 				}
 			}
 		}
-		return 0;
+		return false;
 	}
 }
