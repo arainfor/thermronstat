@@ -15,16 +15,16 @@ public class PiGPIO {
 
     public static final String GPIO_ON = "1";
     public static final String GPIO_OFF = "0";
-
+    protected static final String IO_BASE_FS = System.getProperty("PiGPIO.IO_BASE_FS", "/sys/class/gpio/");
     protected FileWriter commandFile;
-    
+
     public PiGPIO (Pin pin, Direction direction) throws IOException {
 
     	/*** Init GPIO port for output ***/
 
     	// Reset the port
-    	File exportFileCheck = new File("/sys/class/gpio/gpio" + pin);
-    	if (exportFileCheck.exists()) {
+        File exportFileCheck = new File(IO_BASE_FS + "gpio" + pin);
+        if (exportFileCheck.exists()) {
     		unExport(pin);
     	}            
 
@@ -34,7 +34,7 @@ public class PiGPIO {
     	setDirection(pin, direction);
 
     	// Open file handle to issue commands to GPIO port
-    	commandFile = new FileWriter("/sys/class/gpio/gpio" + pin + "/value");
+        commandFile = new FileWriter(IO_BASE_FS + "gpio" + pin + "/value");
     }
 
     /**
@@ -50,11 +50,10 @@ public class PiGPIO {
             e.printStackTrace();
         }
 
-
     }
 
     public void unExport(Pin pin) throws IOException {
-        FileWriter unexportFile = new FileWriter("/sys/class/gpio/unexport");
+        FileWriter unexportFile = new FileWriter(IO_BASE_FS + "unexport");
 
     	unexportFile.write(pin.getName());
     	unexportFile.flush();
@@ -62,7 +61,7 @@ public class PiGPIO {
     }
 
     public void export(Pin pin) throws IOException {
-        FileWriter exportFile = new FileWriter("/sys/class/gpio/export");
+        FileWriter exportFile = new FileWriter(IO_BASE_FS + "export");
 
         exportFile.write(pin.getName());
         exportFile.flush();
@@ -71,7 +70,7 @@ public class PiGPIO {
 
     public void setDirection(Pin pin, Direction direction) throws IOException {
         // Open file handle to port input/output control
-        FileWriter directionFile = new FileWriter("/sys/class/gpio/gpio" + pin.getName() + "/direction");
+        FileWriter directionFile = new FileWriter(IO_BASE_FS + "gpio" + pin.getName() + "/direction");
 
         // Set port for output
         directionFile.write(direction.get());

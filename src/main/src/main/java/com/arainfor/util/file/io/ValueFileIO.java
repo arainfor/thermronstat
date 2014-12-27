@@ -3,6 +3,9 @@
  */
 package com.arainfor.util.file.io;
 
+import com.arainfor.util.logger.AppLogger;
+import org.slf4j.Logger;
+
 import java.io.*;
 import java.nio.charset.Charset;
 
@@ -11,7 +14,7 @@ import java.nio.charset.Charset;
  *
  */
 public class ValueFileIO {
-	
+	Logger logger = new AppLogger().getLogger(this.getClass().getName());
 	String _filename;
 	public ValueFileIO(String filename) {
 		_filename = filename;
@@ -44,7 +47,8 @@ public class ValueFileIO {
 			return Double.parseDouble(line);
 		}
 		br.close();
-		
+
+		logger.warn("Unable to readDouble from: {}", _filename);
 		return -1;
 	}
 	
