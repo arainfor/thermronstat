@@ -4,6 +4,7 @@
 package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.H1TemperatureControl;
+import com.arainfor.thermronstat.RelayOutputs;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
@@ -15,7 +16,11 @@ import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -40,8 +45,11 @@ public class PollThread extends Thread {
 	private static int APPLICATION_VERSION_MAJOR = 1;
 	private static int APPLICATION_VERSION_MINOR = 0;
 	private static int APPLICATION_VERSION_BUILD = 5;
+	private static String logFileName = null;
 	protected Logger logger;
 	protected int sleep = Integer.parseInt(System.getProperty("poll.sleep", "1000"));
+	private FileOutputStream fos = null;
+
 
 	public PollThread() {
 
@@ -49,6 +57,27 @@ public class PollThread extends Thread {
 
 		logger = new AppLogger().getLogger(this.getClass().getName());
 		logger.info(this.getClass().getName() + " starting...");
+
+
+		if (logFileName != null) {
+			File logFile;
+
+			logFile = new File(logFileName);
+			if (!logFile.exists()) {
+				try {
+					logFile.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				fos = new FileOutputStream(logFile);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+		}
+
 
 		// Add hook to turn off everything...
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -60,6 +89,16 @@ public class PollThread extends Thread {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}  // Try to turn off the HVAC if we are terminated!!
+
+				if (fos != null) {
+					try {
+						fos.flush();
+						fos.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
 				logger.info(this.getClass().getName() + " terminated...");
 			}
 		}));
@@ -115,6 +154,8 @@ public class PollThread extends Thread {
 		props.putAll(System.getProperties());
 		System.setProperties(props);
 
+		logFileName = System.getProperty("dataLogFileName");
+
 		String IO_BASE_FS = System.getProperty("thermronstat.IO_BASE_FS", "/var/thermronstat");
 
 		Path targetPath = new Path(IO_BASE_FS + "/target");
@@ -131,6 +172,7 @@ public class PollThread extends Thread {
 		stage1Control = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
 		statusControl = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
 
+		// The 1wire DS18B20's are connected to GPIO4 pin.
 		String SYS_BUS_FS = System.getProperty("thermronstat.SYS_BUS_FS", "/sys/bus/w1/devices/");
 
 		String indoorFilename = SYS_BUS_FS + System.getProperty("0.source") + "/w1_slave";
@@ -155,6 +197,37 @@ public class PollThread extends Thread {
 		PollThread thermostat = new PollThread();
 		thermostat.start();
 
+	}
+
+	protected void logData(ArrayList<RelayOutputs> relaysEnabled) {
+		if (fos != null) {
+			final String FieldDelimiter = ", ";
+			StringBuffer sb = new StringBuffer();
+			sb.append(System.currentTimeMillis());
+			sb.append(FieldDelimiter);
+			for (RelayOutputs relayOutputs : RelayOutputs.values()) {
+				sb.append(relayOutputs + " " + relaysEnabled.contains(relayOutputs) + FieldDelimiter);
+			}
+
+//			for (TemperatureInputs temperatureInputs : TemperatureInputs.value()) {
+//
+//			}
+
+			try {
+				sb.append("indoor " + indoorSensor.getTempF() + FieldDelimiter);
+				sb.append("plenum " + plenumSensor.getTempF() + FieldDelimiter);
+				sb.append("return " + returnSensor.getTempF() + FieldDelimiter);
+				sb.append("outdoor " + outdoorSensor.getTempF() + FieldDelimiter);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				fos.write(sb.toString().getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
@@ -216,9 +289,12 @@ public class PollThread extends Thread {
 
 			// the real decision is here!
 			H1TemperatureControl controller = new H1TemperatureControl(targetTemp, controlTemp, ambientTemp, 0.5, relayPosition);
-			boolean stage1Enable = controller.enable();
+			ArrayList<RelayOutputs> relaysEnabled = controller.execute();
+			boolean stage1Enable = relaysEnabled.contains(RelayOutputs.Y1);
 
 			logSingle("Run?" + stage1Enable + " target:" + targetTemp + " controlTemp:" + controlTemp + " " + " relayPosition:" + relayPosition);
+
+			logData(relaysEnabled);
 
 			try {
 				if (relayPosition != stage1Enable) {

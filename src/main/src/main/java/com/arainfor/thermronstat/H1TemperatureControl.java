@@ -8,6 +8,8 @@
  */
 package com.arainfor.thermronstat;
 
+import java.util.ArrayList;
+
 /**
  * @author arainfor
  *
@@ -15,18 +17,18 @@ package com.arainfor.thermronstat;
 public class H1TemperatureControl {
 
 	protected final boolean HEAT_ONLY = true;
-	private boolean _running;
-	private double _target;
-	private double _control;
-	private double _ambient;
-	private double _anticipator;
+	private boolean running;
+	private double target;
+	private double control;
+	private double ambient;
+	private double anticipator;
 
 	public H1TemperatureControl(double target, double control, double ambient, double anticipator, boolean running) {
-		_target = target;
-		_control = control;
-		_ambient = ambient;
-		_running = running;
-		_anticipator = anticipator;
+		this.target = target;
+		this.control = control;
+		this.ambient = ambient;
+		this.running = running;
+		this.anticipator = anticipator;
 	}
 	
 	/**
@@ -36,8 +38,8 @@ public class H1TemperatureControl {
 	public boolean isHeat() {
 		if (HEAT_ONLY)
 			return HEAT_ONLY;
-		
-		if (_target > _ambient)
+
+		if (target > ambient)
 			return true;
 		return false;
 	}
@@ -46,31 +48,35 @@ public class H1TemperatureControl {
 	 * Returns if we should energized the relay depending on mode.
 	 * @return
 	 */
-	public boolean enable() {
+	public ArrayList<RelayOutputs> execute() {
+
 		if (isHeat()) {
+
 			//_logger.debug("Heat mode");
-			if (_running) {
+			if (running) {
 				// TODO: This logic should consider the current runtime and adjust anticipator
-				if (_control < _target - _anticipator) {
-					return true;
+				if (control < target - anticipator) {
+					return new RelayControls().heatStage1();
 				}
 			} else {
-				if (_control < _target) {
-					return true;
+				if (control < target) {
+					return new RelayControls().heatStage1();
 				}
 			}
 		} else {
+
 			//_logger.debug("Cool mode");
-			if (_running) {
-				if (_control > _target + _anticipator) {
-					return true;
+			if (running) {
+				if (control > target + anticipator) {
+					return new RelayControls().coolStage1();
 				}
 			} else {
-				if (_control > _target) {
-					return true;
+				if (control > target) {
+					return new RelayControls().coolStage1();
 				}
 			}
 		}
-		return false;
+
+		return new ArrayList<RelayOutputs>();  // No relays are energized
 	}
 }
