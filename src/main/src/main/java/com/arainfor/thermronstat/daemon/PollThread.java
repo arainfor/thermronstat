@@ -202,6 +202,7 @@ public class PollThread extends Thread {
 	protected void logData(ArrayList<RelayOutputs> relaysEnabled) {
 		if (fos != null) {
 			final String FieldDelimiter = ", ";
+			final String LineSeparator = System.getProperty("line.separator");
 			StringBuffer sb = new StringBuffer();
 			sb.append(System.currentTimeMillis());
 			sb.append(FieldDelimiter);
@@ -217,7 +218,7 @@ public class PollThread extends Thread {
 				sb.append("indoor " + indoorSensor.getTempF() + FieldDelimiter);
 				sb.append("plenum " + plenumSensor.getTempF() + FieldDelimiter);
 				sb.append("return " + returnSensor.getTempF() + FieldDelimiter);
-				sb.append("outdoor " + outdoorSensor.getTempF() + FieldDelimiter);
+				sb.append("outdoor " + outdoorSensor.getTempF() + LineSeparator);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
