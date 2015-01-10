@@ -3,6 +3,8 @@ thermronstat
 
 A RaspberryPi based thermostat project
 
+The 1wire DS18B20's are connected to GPIO4 pin
+
 This program is currently live on a single stage HEAT only appliction.  A planned H3/C2 implementation that will 
 controll my GeoThermal is in the works.
 
