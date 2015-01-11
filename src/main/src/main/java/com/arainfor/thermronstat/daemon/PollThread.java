@@ -4,7 +4,9 @@
 package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.H1TemperatureControl;
-import com.arainfor.thermronstat.RelayOutputs;
+import com.arainfor.thermronstat.RelayDef;
+import com.arainfor.thermronstat.RelayMap;
+import com.arainfor.thermronstat.Thermometer;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
@@ -16,9 +18,6 @@ import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -30,26 +29,37 @@ import java.util.Properties;
 public class PollThread extends Thread {
 
 	// relays
-	protected static PiGPIO stage1Relay;  // relay for Stage 1
-	// value files
-	protected static ValueFileIO statusControl;
-	protected static ValueFileIO stage1Control;   // user control file for stage1Relay
-	protected static ValueFileIO targetControl;
-	// Thermometers
-	protected static DS18B20 indoorSensor;
-	protected static DS18B20 outdoorSensor;
-	protected static DS18B20 plenumSensor;
-	protected static DS18B20 returnSensor;
+	protected static PiGPIO relayG;   // relay for Fan G
+	protected static PiGPIO relayY1;  // relay for Stage 1
+	protected static PiGPIO relayY2;  // relay for Stage 2
+	protected static PiGPIO relayW;   // relay for Emergency Heat
+	protected static PiGPIO relayO;   // relay for Reversing valve
+	// value files used for user control and feedback
+	protected static ValueFileIO statusControlValue; // This file enables/disables the entire system
+	protected static ValueFileIO userY1value;        // user feedback file for Y1 relay
+	protected static ValueFileIO userY2value;        // user feedback file for Y2 relay
+	protected static ValueFileIO userGvalue;         // user feedback file for G relay
+	protected static ValueFileIO userWvalue;         // user feedback file for W relay
+	protected static ValueFileIO userOvalue;         // user feedback file for O relay
+	protected static ValueFileIO userTargetTempValue;  // This file is the user target temperature
+	protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
 	static String oldSingleMsg;
+	// Thermometers
+//	protected static DS18B20 indoorSensor;
+//	protected static DS18B20 outdoorSensor;
+//	protected static DS18B20 plenumSensor;
+//	protected static DS18B20 returnSensor;
+	private static ThermLogger thermlogger;
 	private static String APPLICATION_NAME = "ThermRonStat";
-	private static int APPLICATION_VERSION_MAJOR = 1;
+	private static int APPLICATION_VERSION_MAJOR = 2;
 	private static int APPLICATION_VERSION_MINOR = 0;
-	private static int APPLICATION_VERSION_BUILD = 5;
+	private static int APPLICATION_VERSION_BUILD = 0;
 	private static String logFileName = null;
+	// these map the GPIO to a RelayOutputs value
+	protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
 	protected Logger logger;
 	protected int sleep = Integer.parseInt(System.getProperty("poll.sleep", "1000"));
-	private FileOutputStream fos = null;
-
+	private long currentRuntimeStart;
 
 	public PollThread() {
 
@@ -59,58 +69,46 @@ public class PollThread extends Thread {
 		logger.info(this.getClass().getName() + " starting...");
 
 
-		if (logFileName != null) {
-			File logFile;
-
-			logFile = new File(logFileName);
-			if (!logFile.exists()) {
-				try {
-					logFile.createNewFile();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			try {
-				fos = new FileOutputStream(logFile);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-
-		}
-
-
-		// Add hook to turn off everything...
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-		    public void run() {
-				logger.info("Turning OFF HVAC...");
-				try {
-					stage1Relay.setValue(false);
-					statusControl.write(0);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}  // Try to turn off the HVAC if we are terminated!!
-
-				if (fos != null) {
-					try {
-						fos.flush();
-						fos.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-
-				logger.info(this.getClass().getName() + " terminated...");
-			}
-		}));
-
 		// setup gpio
 		try {
-			stage1Relay = new PiGPIO(new Pin(17), Direction.OUT);
+
+			relayG = new PiGPIO(new Pin(21), Direction.OUT);
+			relayY1 = new PiGPIO(new Pin(17), Direction.OUT);
+			relayY2 = new PiGPIO(new Pin(22), Direction.OUT);
+			relayW = new PiGPIO(new Pin(23), Direction.OUT);
+			relayO = new PiGPIO(new Pin(24), Direction.OUT);
+
 		} catch (IOException ioe) {
 			System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
 			ioe.printStackTrace();
 			System.exit(-1);
 		}
+
+		// map the relays
+		relayMap.add(new RelayMap(RelayDef.G, relayG, userGvalue));
+		relayMap.add(new RelayMap(RelayDef.Y1, relayY1, userY1value));
+		relayMap.add(new RelayMap(RelayDef.Y2, relayY2, userY2value));
+		relayMap.add(new RelayMap(RelayDef.W, relayW, userWvalue));
+		relayMap.add(new RelayMap(RelayDef.O, relayO, userOvalue));
+
+		// Add hook to turn off everything...
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				logger.info("Turning OFF HVAC...");
+				try {
+					relayY1.setValue(false);
+					statusControlValue.write(0);
+					thermlogger.logSystemOnOff(false);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}  // Try to turn off the HVAC if we are terminated!!
+
+				if (thermlogger != null)
+					thermlogger.close();
+
+				logger.info(this.getClass().getName() + " terminated...");
+			}
+		}));
 
 	}
 
@@ -156,6 +154,8 @@ public class PollThread extends Thread {
 
 		logFileName = System.getProperty("dataLogFileName");
 
+		thermlogger = new ThermLogger(logFileName);
+
 		String IO_BASE_FS = System.getProperty("thermronstat.IO_BASE_FS", "/var/thermronstat");
 
 		Path targetPath = new Path(IO_BASE_FS + "/target");
@@ -168,9 +168,13 @@ public class PollThread extends Thread {
 			statusPath.build();
 		}
 
-		targetControl = new ValueFileIO(targetPath.getAbsolutePath() + "/0");
-		stage1Control = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
-		statusControl = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
+		userTargetTempValue = new ValueFileIO(targetPath.getAbsolutePath() + "/0");
+		statusControlValue = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
+		userGvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
+		userY1value = new ValueFileIO(relayPath.getAbsolutePath() + "/1");
+		userY2value = new ValueFileIO(relayPath.getAbsolutePath() + "/2");
+		userWvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/3");
+		userOvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/4");
 
 		// The 1wire DS18B20's are connected to GPIO4 pin.
 		String SYS_BUS_FS = System.getProperty("thermronstat.SYS_BUS_FS", "/sys/bus/w1/devices/");
@@ -180,18 +184,18 @@ public class PollThread extends Thread {
 		String plenumFilename = SYS_BUS_FS + System.getProperty("2.source") + "/w1_slave";
 		String returnFilename = SYS_BUS_FS + System.getProperty("3.source") + "/w1_slave";
 
-		indoorSensor = new DS18B20(indoorFilename);
-		outdoorSensor = new DS18B20(outdoorFilename);
-		plenumSensor = new DS18B20(plenumFilename);
-		returnSensor = new DS18B20(returnFilename);
+		thermometers.add(new Thermometer(0, System.getProperty("0.name"), new DS18B20(indoorFilename)));
+		thermometers.add(new Thermometer(1, System.getProperty("1.name"), new DS18B20(outdoorFilename)));
+		thermometers.add(new Thermometer(2, System.getProperty("2.name"), new DS18B20(plenumFilename)));
+		thermometers.add(new Thermometer(3, System.getProperty("3.name"), new DS18B20(returnFilename)));
 
-		System.out.println("Target Temperature File: " + targetControl);
+		System.out.println("Target Temperature File: " + userTargetTempValue);
 		System.out.println("Indoor Temperature Name: " + System.getProperty("0.name") + " File: " + indoorFilename);
 		System.out.println("Outdoor Temperature Name: " + System.getProperty("1.name") + " File: " + outdoorFilename);
 		System.out.println("Plenum Temperature Name: " + System.getProperty("2.name") + " File: " + plenumFilename);
 		System.out.println("Return Temperature Name: " + System.getProperty("3.name") + " File: " + returnFilename);
-		System.out.println("Relay Control File: " + stage1Control);  // Is the system currently running?
-		System.out.println("System Available Control File: " + statusControl);  // User desired state of relay, on or off
+		System.out.println("Relay Control File: " + userY1value);  // Is the system currently running?
+		System.out.println("System Available Control File: " + statusControlValue);  // User desired state of relay, on or off
 
 		// Main entry point to launch the program
 		PollThread thermostat = new PollThread();
@@ -199,37 +203,6 @@ public class PollThread extends Thread {
 
 	}
 
-	protected void logData(ArrayList<RelayOutputs> relaysEnabled) {
-		if (fos != null) {
-			final String FieldDelimiter = ", ";
-			final String LineSeparator = System.getProperty("line.separator");
-			StringBuffer sb = new StringBuffer();
-			sb.append(System.currentTimeMillis());
-			sb.append(FieldDelimiter);
-			for (RelayOutputs relayOutputs : RelayOutputs.values()) {
-				sb.append(relayOutputs + " " + relaysEnabled.contains(relayOutputs) + FieldDelimiter);
-			}
-
-//			for (TemperatureInputs temperatureInputs : TemperatureInputs.value()) {
-//
-//			}
-
-			try {
-				sb.append("indoor " + indoorSensor.getTempF() + FieldDelimiter);
-				sb.append("plenum " + plenumSensor.getTempF() + FieldDelimiter);
-				sb.append("return " + returnSensor.getTempF() + FieldDelimiter);
-				sb.append("outdoor " + outdoorSensor.getTempF() + LineSeparator);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				fos.write(sb.toString().getBytes());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
 	@Override
 	public void run() {
@@ -245,15 +218,16 @@ public class PollThread extends Thread {
 				continue;
 			}
 
-			boolean relayPosition = false;
+			boolean stage1RelayPosition = false;
 			boolean systemStatus = false;
 
 			try {
-				systemStatus = statusControl.read();
-				relayPosition = stage1Control.read();
+				systemStatus = statusControlValue.read();
+				stage1RelayPosition = userY1value.read();
 
 				// Display a message if we toggled systemStatus.
 				if (systemStatus != lastSystemStatus) {
+					thermlogger.logSystemOnOff(systemStatus);
 					if (!systemStatus)
 						logger.info("Turning System OFF");
 					else
@@ -262,9 +236,10 @@ public class PollThread extends Thread {
 				}
 
 				if (!systemStatus) {
-					if (relayPosition) { // turn off the relay if user wants it off!
+					if (stage1RelayPosition) { // turn off the relay if user wants it off!
 						// TODO: call new method to turn off all outputs
-						stage1Relay.setValue(false);
+						relayY1.setValue(false);
+						logSingle("Stage1 OFF");
 					}
 					continue;
 				}
@@ -275,44 +250,72 @@ public class PollThread extends Thread {
 				continue;
 			}
 
-			// read all the known values
-			double controlTemp, ambientTemp, targetTemp = 0;
+			double targetTemp;
+			double indoorTemp;
+			double outdoorTemp;
 
 			try {
-				targetTemp = targetControl.readDouble();
-				controlTemp = indoorSensor.getTempF();
-				ambientTemp = outdoorSensor.getTempF();
+				targetTemp = userTargetTempValue.readDouble();
+				indoorTemp = thermometers.get(0).getDs18B20().getTempF();
+				outdoorTemp = thermometers.get(1).getDs18B20().getTempF();
 			} catch (IOException ioe) {
-				logger.error("Temperature Read error!: " + ioe.toString());
+				logger.error("Target Temperature Read error!: " + ioe.toString());
 				ioe.printStackTrace();
 				continue;
 			}
 
 			// the real decision is here!
-			H1TemperatureControl controller = new H1TemperatureControl(targetTemp, controlTemp, ambientTemp, 0.5, relayPosition);
-			ArrayList<RelayOutputs> relaysEnabled = controller.execute();
-			boolean stage1Enable = relaysEnabled.contains(RelayOutputs.Y1);
+			H1TemperatureControl controller = new H1TemperatureControl(
+					targetTemp,
+					indoorTemp,
+					0.5,
+					currentRuntimeStart);
 
-			logSingle("Run?" + stage1Enable + " target:" + targetTemp + " controlTemp:" + controlTemp + " " + " relayPosition:" + relayPosition);
+			ArrayList<RelayDef> relaysEnabled = controller.execute();
+			boolean stage1Enable = relaysEnabled.contains(RelayDef.Y1);
+			if (stage1Enable) {
+				if (currentRuntimeStart == 0)
+					currentRuntimeStart = System.currentTimeMillis();
+			} else {
+				if (currentRuntimeStart > 0) {
+					thermlogger.logRuntime(System.currentTimeMillis() - currentRuntimeStart);
+					currentRuntimeStart = 0;
+				}
+			}
 
-			logData(relaysEnabled);
+			logSingle("Run?" + stage1Enable + " target:" + targetTemp + " indoorTemp:" + indoorTemp + " " + " stage1RelayPosition:" + stage1RelayPosition);
+
+			thermlogger.logSummary(relaysEnabled, thermometers);
 
 			try {
-				if (relayPosition != stage1Enable) {
-					if (stage1Enable)
-						stage1Relay.setValue(true);
-					else
-						stage1Relay.setValue(false);
+				// loop thru all the relays and set values accordingly.
+				for (RelayMap rm : relayMap) {
+					RelayDef rd = rm.getRelayDef();
+					if (relaysEnabled.contains(rd)) {
+						rm.getPiGPIO().setValue(true);
+					} else {
+						rm.getPiGPIO().setValue(false);
+					}
+				}
+
+				if (stage1RelayPosition != stage1Enable) {
+//					relayY1.setValue(stage1Enable);
+//					if (stage1Enable) {
+//						relayY1.setValue(true);
+//					}
+//					else {
+//						relayY1.setValue(false);
+//					}
 
 					logger.debug("***************");
 					logger.debug("heat mode? " + controller.isHeat());
 					logger.debug("target_temp=" + targetTemp);
-					logger.debug("indoor_temp=" + controlTemp);
-					logger.debug("outdoor_temp=" + ambientTemp);
-					logger.info("Relay changed from:" + relayPosition + " to:" + stage1Enable);
+					logger.debug("indoor_temp=" + indoorTemp);
+					logger.debug("outdoor_temp=" + outdoorTemp);
+					logger.info("Stage1 Relay changed from:" + stage1RelayPosition + " to:" + stage1Enable);
 
 					// Change to the new setting...
-					stage1Control.write(stage1Enable);
+					userY1value.write(stage1Enable);
 				}
 			} catch (IOException e) {
 				logger.error("Relay Control Error: " + e.toString());
@@ -322,11 +325,12 @@ public class PollThread extends Thread {
 		}
 	}
 
-	private void logSingle(String msg) {
+	private boolean logSingle(String msg) {
 		if (msg.equals(oldSingleMsg))
-			return;
+			return false;
 		logger.debug(msg);
 		oldSingleMsg = msg;
+		return true;
 	}
 
 }

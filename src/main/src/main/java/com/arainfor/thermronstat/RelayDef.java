@@ -3,17 +3,17 @@ package com.arainfor.thermronstat;
 /**
  * Created by arainfor on 12/27/14.
  */
-public enum RelayOutputs {
+public enum RelayDef {
 
     G("Fan"),
     Y1("Stage1"),
     Y2("Stage2"),
     W("AuxHeat"),
-    O("ReversingValve");
+    O("ReversingValve"),;
 
     private String name;
 
-    RelayOutputs(String name) {
+    RelayDef(String name) {
         this.name = name;
     }
 

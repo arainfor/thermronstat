@@ -16,11 +16,20 @@ public class PiGPIO {
     public static final String GPIO_ON = "1";
     public static final String GPIO_OFF = "0";
     protected static final String IO_BASE_FS = System.getProperty("PiGPIO.IO_BASE_FS", "/sys/class/gpio/");
+    static boolean foreignHardware = false;
     protected FileWriter commandFile;
+    private Pin pin;
 
     public PiGPIO (Pin pin, Direction direction) throws IOException {
 
     	/*** Init GPIO port for output ***/
+
+        this.pin = pin;
+
+        this.foreignHardware = new File(IO_BASE_FS).exists();
+
+        if (this.foreignHardware)
+            return;
 
     	// Reset the port
         File exportFileCheck = new File(IO_BASE_FS + "gpio" + pin);
@@ -53,6 +62,10 @@ public class PiGPIO {
     }
 
     public void unExport(Pin pin) throws IOException {
+
+        if (this.foreignHardware)
+            return;
+
         FileWriter unexportFile = new FileWriter(IO_BASE_FS + "unexport");
 
     	unexportFile.write(pin.getName());
@@ -61,6 +74,10 @@ public class PiGPIO {
     }
 
     public void export(Pin pin) throws IOException {
+
+        if (this.foreignHardware)
+            return;
+
         FileWriter exportFile = new FileWriter(IO_BASE_FS + "export");
 
         exportFile.write(pin.getName());
@@ -69,6 +86,10 @@ public class PiGPIO {
     }
 
     public void setDirection(Pin pin, Direction direction) throws IOException {
+
+        if (this.foreignHardware)
+            return;
+
         // Open file handle to port input/output control
         FileWriter directionFile = new FileWriter(IO_BASE_FS + "gpio" + pin.getName() + "/direction");
 
@@ -79,12 +100,20 @@ public class PiGPIO {
     }
     
     public void setValue(Boolean value) throws IOException {
-    	if (value) {
-    		commandFile.write(GPIO_ON);
+
+        if (this.foreignHardware)
+            return;
+
+        if (value) {
+            commandFile.write(GPIO_ON);
     	} else {
     		commandFile.write(GPIO_OFF);
     	}
     	commandFile.flush();
+    }
+
+    public Pin getPin() {
+        return pin;
     }
 
 }

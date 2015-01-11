@@ -7,18 +7,18 @@ import java.util.ArrayList;
  */
 public class RelayControls {
 
-    public ArrayList<RelayOutputs> heatStage1() {
-        ArrayList<RelayOutputs> relaysEnergized = new ArrayList<RelayOutputs>();
-        relaysEnergized.add(RelayOutputs.G);
-        relaysEnergized.add(RelayOutputs.Y1);
+    public ArrayList<RelayDef> heatStage1() {
+        ArrayList<RelayDef> relaysEnergized = new ArrayList<RelayDef>();
+        relaysEnergized.add(RelayDef.G);
+        relaysEnergized.add(RelayDef.Y1);
         return relaysEnergized;
     }
 
-    public ArrayList<RelayOutputs> coolStage1() {
-        ArrayList<RelayOutputs> relaysEnergized = new ArrayList<RelayOutputs>();
-        relaysEnergized.add(com.arainfor.thermronstat.RelayOutputs.G);
-        relaysEnergized.add(com.arainfor.thermronstat.RelayOutputs.Y1);
-        relaysEnergized.add(com.arainfor.thermronstat.RelayOutputs.O);
+    public ArrayList<RelayDef> coolStage1() {
+        ArrayList<RelayDef> relaysEnergized = new ArrayList<RelayDef>();
+        relaysEnergized.add(RelayDef.G);
+        relaysEnergized.add(RelayDef.Y1);
+        relaysEnergized.add(RelayDef.O);
         return relaysEnergized;
     }
 
