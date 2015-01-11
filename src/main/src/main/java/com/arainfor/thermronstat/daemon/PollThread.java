@@ -156,7 +156,7 @@ public class PollThread extends Thread {
 
 		thermlogger = new ThermLogger(logFileName);
 
-		String IO_BASE_FS = System.getProperty("thermronstat.IO_BASE_FS", "/var/thermronstat");
+		String IO_BASE_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".IO_BASE_FS", "/var/" + APPLICATION_NAME.toLowerCase());
 
 		Path targetPath = new Path(IO_BASE_FS + "/target");
 		Path relayPath = new Path(IO_BASE_FS + "/relay");
@@ -177,7 +177,7 @@ public class PollThread extends Thread {
 		userOvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/4");
 
 		// The 1wire DS18B20's are connected to GPIO4 pin.
-		String SYS_BUS_FS = System.getProperty("thermronstat.SYS_BUS_FS", "/sys/bus/w1/devices/");
+		String SYS_BUS_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".SYS_BUS_FS", "/sys/bus/w1/devices/");
 
 		String indoorFilename = SYS_BUS_FS + System.getProperty("0.source") + "/w1_slave";
 		String outdoorFilename = SYS_BUS_FS + System.getProperty("1.source") + "/w1_slave";
