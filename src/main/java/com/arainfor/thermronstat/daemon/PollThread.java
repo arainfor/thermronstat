@@ -17,6 +17,7 @@ import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,11 +45,6 @@ public class PollThread extends Thread {
 	protected static ValueFileIO userTargetTempValue;  // This file is the user target temperature
 	protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
 	static String oldSingleMsg;
-	// Thermometers
-//	protected static DS18B20 indoorSensor;
-//	protected static DS18B20 outdoorSensor;
-//	protected static DS18B20 plenumSensor;
-//	protected static DS18B20 returnSensor;
 	private static ThermLogger thermlogger;
 	private static String APPLICATION_NAME = "ThermRonStat";
 	private static int APPLICATION_VERSION_MAJOR = 2;
@@ -117,6 +113,8 @@ public class PollThread extends Thread {
 	 */
 	public static void main(String[] args) throws IOException {
 
+		Logger log = LoggerFactory.getLogger(PollThread.class);
+
 		//System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
 		Options options = new Options();
 		options.addOption("help", false, "This message isn't very helpful");
@@ -146,6 +144,7 @@ public class PollThread extends Thread {
 		if (cmd.getOptionValue("config") != null)
 			propFileName = cmd.getOptionValue("config");
 
+		log.info("loading...{}", propFileName);
 		Properties props = new PropertiesLoader(propFileName).getProps();
 
 		// Append the system properties with our applicaton properties
@@ -154,7 +153,10 @@ public class PollThread extends Thread {
 
 		logFileName = System.getProperty("dataLogFileName");
 
-		thermlogger = new ThermLogger(logFileName);
+		if (logFileName != null) {
+			log.info("logging to: {}", logFileName);
+			thermlogger = new ThermLogger(logFileName);
+		}
 
 		String IO_BASE_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".IO_BASE_FS", "/var/" + APPLICATION_NAME.toLowerCase());
 
@@ -299,14 +301,6 @@ public class PollThread extends Thread {
 				}
 
 				if (stage1RelayPosition != stage1Enable) {
-//					relayY1.setValue(stage1Enable);
-//					if (stage1Enable) {
-//						relayY1.setValue(true);
-//					}
-//					else {
-//						relayY1.setValue(false);
-//					}
-
 					logger.debug("***************");
 					logger.debug("heat mode? " + controller.isHeat());
 					logger.debug("target_temp=" + targetTemp);
@@ -325,6 +319,12 @@ public class PollThread extends Thread {
 		}
 	}
 
+	/**
+	 * Log a message but don't repeat the same message over and over.
+	 *
+	 * @param msg
+	 * @return
+	 */
 	private boolean logSingle(String msg) {
 		if (msg.equals(oldSingleMsg))
 			return false;

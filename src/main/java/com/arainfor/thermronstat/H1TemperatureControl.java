@@ -11,6 +11,8 @@ package com.arainfor.thermronstat;
 import java.util.ArrayList;
 
 /**
+ * This class is for a Single Stage Heat Only furnace.
+ *
  * @author arainfor
  *
  */
@@ -43,7 +45,8 @@ public class H1TemperatureControl {
 	}
 
 	/**
-	 * Returns if we should energized the relay depending on mode.
+	 * Returns the relays we should energize depending on mode.
+	 *
 	 * @return
 	 */
 	public ArrayList<RelayDef> execute() {

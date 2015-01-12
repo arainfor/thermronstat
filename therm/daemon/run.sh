@@ -1,2 +1,2 @@
 #!/bin/sh
-nohup java -cp /home/arainfor/therm/daemon/thermronstat.jar:/home/arainfor/therm/daemon com/ronhull/thermronstat/daemon/Main&
+sudo java -cp "lib/*" com.arainfor.thermronstat.daemon.PollThread --config=thermostat.properties&

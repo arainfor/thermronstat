@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 
 /**
@@ -83,9 +84,13 @@ public class ThermLogger {
                 sb.append(relayDef + " " + relaysEnabled.contains(relayDef) + FieldDelimiter);
             }
 
+            NumberFormat nf = NumberFormat.getInstance();
+            nf.setMaximumFractionDigits(1);
             for (Thermometer thermometer : thermometers) {
                 try {
-                    sb.append("Thermometer index: " + thermometer.getIndex() + " " + thermometer.getName() + " " + thermometer.getDs18B20().getTempF() + " ");
+                    sb.append("Thermometer idx: " + thermometer.getIndex()
+                            + " " + thermometer.getName()
+                            + " " + nf.format(thermometer.getDs18B20().getTempF()) + " ");
                 } catch (IOException e) {
                     logger.error("Exception:", e);
                 }

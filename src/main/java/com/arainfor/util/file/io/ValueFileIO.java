@@ -15,9 +15,9 @@ import java.nio.charset.Charset;
  */
 public class ValueFileIO {
 	Logger logger = new AppLogger().getLogger(this.getClass().getName());
-	String _filename;
+	String filename;
 	public ValueFileIO(String filename) {
-		_filename = filename;
+		this.filename = filename;
 	}
 	
 	public void write(boolean value) throws IOException {
@@ -25,8 +25,8 @@ public class ValueFileIO {
 	}
 	
 	public void write(double value) throws IOException {
-		FileWriter fstream = new FileWriter(_filename, false);
-		BufferedWriter out = new BufferedWriter(fstream);
+		FileWriter fileWriter = new FileWriter(filename, false);
+		BufferedWriter out = new BufferedWriter(fileWriter);
 		out.write(Double.toString(value));
 		out.close();
 	}
@@ -39,8 +39,8 @@ public class ValueFileIO {
 		InputStream fis;
 		BufferedReader br;
 		String  line;
-		
-		fis = new FileInputStream(_filename);
+
+		fis = new FileInputStream(filename);
 		br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
 		while ((line = br.readLine()) != null) {
 			br.close();
@@ -48,12 +48,12 @@ public class ValueFileIO {
 		}
 		br.close();
 
-		logger.warn("Unable to readDouble from: {}", _filename);
+		logger.warn("Unable to readDouble from: {}", filename);
 		return -1;
 	}
 	
 	public String toString() {
-		return _filename;
+		return filename;
 	}
 
 }
