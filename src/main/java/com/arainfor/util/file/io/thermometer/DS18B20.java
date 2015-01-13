@@ -39,28 +39,30 @@ public class DS18B20 {
 	}
 
 	protected Double readRaw() throws IOException {
-		InputStream fis;
-		BufferedReader br;
-		String  line;
+		if (!_filename.equalsIgnoreCase("unknown")) {
+			InputStream fis;
+			BufferedReader br;
+			String line;
 
-		fis = new FileInputStream(_filename);
-		br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+			fis = new FileInputStream(_filename);
+			br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
 
-		line = br.readLine();
-
-		if (line.contains("YES")) {
 			line = br.readLine();
-		} else {
-			line = null;
-		}
-		br.close();
 
-		if (line != null) {
-			int indexOfTemp = line.indexOf("=");
-			String celcius = line.substring(indexOfTemp + 1);
-			return Double.valueOf(celcius) /  1000;
+			if (line.contains("YES")) {
+				line = br.readLine();
+			} else {
+				line = null;
+			}
+			br.close();
+
+			if (line != null) {
+				int indexOfTemp = line.indexOf("=");
+				String celcius = line.substring(indexOfTemp + 1);
+				return Double.valueOf(celcius) / 1000;
+			}
 		}
-		return (double) Double.NEGATIVE_INFINITY;
+		return Double.NEGATIVE_INFINITY;
 
 	}
 
