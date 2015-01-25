@@ -23,7 +23,6 @@ public class StatusLogger extends FileLogger {
         super();
     }
 
-
     public void logRelays(ArrayList<RelayMap> relayMap) {
 
         HashMap<Integer, Boolean> relayMapNow = new HashMap<Integer, Boolean>();
@@ -36,15 +35,13 @@ public class StatusLogger extends FileLogger {
                 if (relayMapNow.get(i) != relayMapLast.get(i))
                     dirty = true;
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.warn("Error reading relay:{}", relayMap.get(i).getRelayDef());
             }
         }
-
 
         // Do entry if dirty
         if (dirty) {
             StringBuffer sb = new StringBuffer();
-
             logHeader(sb);
             for (int i = 0; i < relayMap.size(); i++) {
                 String entry = relayMap.get(i).getRelayDef() + ": " + relayMapNow.get(i);
