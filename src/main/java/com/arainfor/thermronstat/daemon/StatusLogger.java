@@ -35,7 +35,7 @@ public class StatusLogger extends FileLogger {
                 if (relayMapNow.get(i) != relayMapLast.get(i))
                     dirty = true;
             } catch (IOException e) {
-                logger.warn("Error reading relay:{}", relayMap.get(i).getRelayDef());
+                logger.warn("Error reading relay:{}", relayMap.get(i).getRelayDef(), e);
             }
         }
 
