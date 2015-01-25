@@ -18,9 +18,10 @@ public class Pin {
 	
 	public Pin(int value)  throws NumberFormatException {
 		_value = value;
-		if (_value != 17 && _value != 21 && _value != 22 && _value != 23
-				&& _value != 24 && _value != 25)
-			throw new NumberFormatException("GPIO pin " + _value + " not supported!");
+//		if (_value != 17 && _value != 21 && _value != 22 && _value != 23
+//				&& _value != 14 && _value != 15 && _value != 18
+//				&& _value != 24 && _value != 25)
+//			throw new NumberFormatException("GPIO pin " + _value + " not supported!");
 	}
 	
 	public int getValue() {

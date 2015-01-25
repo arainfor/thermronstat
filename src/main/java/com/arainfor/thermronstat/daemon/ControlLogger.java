@@ -15,42 +15,27 @@ import java.util.ArrayList;
 /**
  * Created by arainfor on 1/10/15.
  */
-public class ThermLogger {
+public class ControlLogger extends FileLogger {
 
-    private static final Logger logger = LoggerFactory.getLogger(ThermLogger.class);
-    final String FieldDelimiter = ", ";
-    final String LineSeparator = System.getProperty("line.separator");
+    private static final Logger logger = LoggerFactory.getLogger(ControlLogger.class);
     private FileOutputStream fos = null;
 
-    public ThermLogger(String logFileName) {
-        if (logFileName != null) {
-            File logFile;
-
-            logFile = new File(logFileName);
-            if (!logFile.exists()) {
-                try {
-                    logFile.createNewFile();
-                } catch (IOException e) {
-                    logger.error("Exception:", e);
-                }
-            }
-            try {
-                fos = new FileOutputStream(logFile, true);
-            } catch (FileNotFoundException e) {
-                logger.error("Exception:", e);
-            }
-
+    public ControlLogger(String logFileName) throws IOException {
+        super(logFileName);
+        try {
+            fos = new FileOutputStream(new File(logFileName), true);
+        } catch (FileNotFoundException e) {
+            logger.error("Exception:", e);
         }
+
     }
 
-    protected void logHeader(StringBuffer sb) {
-        sb.append("Time: " + System.currentTimeMillis() + FieldDelimiter);
-    }
 
     protected void logSystemOnOff(boolean value) {
         StringBuffer sb = new StringBuffer();
         logHeader(sb);
-        sb.append("System: " + (value ? "ON" : "OFF") + LineSeparator);
+        String entry = "System: " + (value ? "ON" : "OFF") + LineSeparator;
+        sb.append(entry);
 
         try {
             fos.write(sb.toString().getBytes());
@@ -63,7 +48,8 @@ public class ThermLogger {
         if (fos != null) {
             StringBuffer sb = new StringBuffer();
             logHeader(sb);
-            sb.append("runtime: " + runtime + LineSeparator);
+            String entry = "runtime: " + runtime + LineSeparator;
+            sb.append(entry);
 
             try {
                 fos.write(sb.toString().getBytes());
@@ -81,16 +67,18 @@ public class ThermLogger {
             logHeader(sb);
             sb.append("summary: ");
             for (RelayDef relayDef : RelayDef.values()) {
-                sb.append(relayDef + " " + relaysEnabled.contains(relayDef) + FieldDelimiter);
+                String entry = relayDef + " " + relaysEnabled.contains(relayDef) + FieldDelimiter;
+                sb.append(entry);
             }
 
             NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(1);
             for (Thermometer thermometer : thermometers) {
                 try {
-                    sb.append("Thermometer idx: " + thermometer.getIndex()
+                    String entry = "Thermometer idx: " + thermometer.getIndex()
                             + " " + thermometer.getName()
-                            + " " + nf.format(thermometer.getDs18B20().getTempF()) + " ");
+                            + " " + nf.format(thermometer.getDs18B20().getTempF()) + " ";
+                    sb.append(entry);
                 } catch (IOException e) {
                     logger.error("Exception:", e);
                 }

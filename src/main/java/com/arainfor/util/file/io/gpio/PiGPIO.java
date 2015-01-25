@@ -3,9 +3,7 @@
  */
 package com.arainfor.util.file.io.gpio;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 /**
  *
@@ -26,9 +24,9 @@ public class PiGPIO {
 
         this.pin = pin;
 
-        this.foreignHardware = new File(IO_BASE_FS).exists();
+        foreignHardware = !new File(IO_BASE_FS).exists();
 
-        if (this.foreignHardware)
+        if (foreignHardware)
             return;
 
     	// Reset the port
@@ -63,7 +61,7 @@ public class PiGPIO {
 
     public void unExport(Pin pin) throws IOException {
 
-        if (this.foreignHardware)
+        if (foreignHardware)
             return;
 
         FileWriter unexportFile = new FileWriter(IO_BASE_FS + "unexport");
@@ -75,7 +73,7 @@ public class PiGPIO {
 
     public void export(Pin pin) throws IOException {
 
-        if (this.foreignHardware)
+        if (foreignHardware)
             return;
 
         FileWriter exportFile = new FileWriter(IO_BASE_FS + "export");
@@ -87,7 +85,7 @@ public class PiGPIO {
 
     public void setDirection(Pin pin, Direction direction) throws IOException {
 
-        if (this.foreignHardware)
+        if (foreignHardware)
             return;
 
         // Open file handle to port input/output control
@@ -98,10 +96,31 @@ public class PiGPIO {
         directionFile.flush();
         directionFile.close();
     }
-    
+
+    public boolean getValue() throws IOException {
+        if (foreignHardware)
+            return false;
+
+
+        BufferedReader br = new BufferedReader(new FileReader(IO_BASE_FS + "gpio" + pin + "/value"));
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            String line = br.readLine();
+
+            if (line != null) {
+                sb.append(line);
+            }
+
+        } finally {
+            br.close();
+        }
+        return Integer.parseInt(sb.toString()) != 0;
+    }
+
     public void setValue(Boolean value) throws IOException {
 
-        if (this.foreignHardware)
+        if (foreignHardware)
             return;
 
         if (value) {

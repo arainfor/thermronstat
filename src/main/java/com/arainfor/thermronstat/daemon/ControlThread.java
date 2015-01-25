@@ -10,9 +10,7 @@ import com.arainfor.thermronstat.Thermometer;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
-import com.arainfor.util.file.io.gpio.Direction;
 import com.arainfor.util.file.io.gpio.PiGPIO;
-import com.arainfor.util.file.io.gpio.Pin;
 import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
@@ -27,7 +25,7 @@ import java.util.Properties;
  * @author arainfor
  *
  */
-public class PollThread extends Thread {
+public class ControlThread extends Thread {
 
 	// relays
 	protected static PiGPIO relayG;   // relay for Fan G
@@ -45,7 +43,7 @@ public class PollThread extends Thread {
 	protected static ValueFileIO userTargetTempValue;  // This file is the user target temperature
 	protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
 	static String oldSingleMsg;
-	private static ThermLogger thermlogger;
+	private static ControlLogger thermlogger;
 	private static String APPLICATION_NAME = "ThermRonStat";
 	private static int APPLICATION_VERSION_MAJOR = 2;
 	private static int APPLICATION_VERSION_MINOR = 0;
@@ -57,7 +55,7 @@ public class PollThread extends Thread {
 	protected int sleep = Integer.parseInt(System.getProperty("poll.sleep", "1000"));
 	private long currentRuntimeStart;
 
-	public PollThread() {
+	public ControlThread() {
 
 		super();
 
@@ -65,6 +63,7 @@ public class PollThread extends Thread {
 		logger.info(this.getClass().getName() + " starting...");
 
 
+/*
 		// setup gpio
 		try {
 
@@ -86,6 +85,7 @@ public class PollThread extends Thread {
 		relayMap.add(new RelayMap(RelayDef.Y2, relayY2, userY2value));
 		relayMap.add(new RelayMap(RelayDef.W, relayW, userWvalue));
 		relayMap.add(new RelayMap(RelayDef.O, relayO, userOvalue));
+*/
 
 		// Add hook to turn off everything...
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -113,7 +113,7 @@ public class PollThread extends Thread {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		Logger log = LoggerFactory.getLogger(PollThread.class);
+		Logger log = LoggerFactory.getLogger(ControlThread.class);
 
 		//System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
 		Options options = new Options();
@@ -151,11 +151,11 @@ public class PollThread extends Thread {
 		props.putAll(System.getProperties());
 		System.setProperties(props);
 
-		logFileName = System.getProperty("dataLogFileName");
+		logFileName = System.getProperty("dataLogFileName", "/var/log/" + ControlThread.APPLICATION_NAME + ".log");
 
 		if (logFileName != null) {
 			log.info("logging to: {}", logFileName);
-			thermlogger = new ThermLogger(logFileName);
+			thermlogger = new ControlLogger(logFileName);
 		}
 
 		String IO_BASE_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".IO_BASE_FS", "/var/" + APPLICATION_NAME.toLowerCase());
@@ -200,7 +200,7 @@ public class PollThread extends Thread {
 		System.out.println("System Available Control File: " + statusControlValue);  // User desired state of relay, on or off
 
 		// Main entry point to launch the program
-		PollThread thermostat = new PollThread();
+		ControlThread thermostat = new ControlThread();
 		thermostat.start();
 
 	}
@@ -220,8 +220,8 @@ public class PollThread extends Thread {
 				continue;
 			}
 
-			boolean stage1RelayPosition = false;
-			boolean systemStatus = false;
+			boolean stage1RelayPosition;
+			boolean systemStatus;
 
 			try {
 				systemStatus = statusControlValue.read();
@@ -322,8 +322,8 @@ public class PollThread extends Thread {
 	/**
 	 * Log a message but don't repeat the same message over and over.
 	 *
-	 * @param msg
-	 * @return
+	 * @param msg The message to log
+	 * @return true if the message is new.
 	 */
 	private boolean logSingle(String msg) {
 		if (msg.equals(oldSingleMsg))
