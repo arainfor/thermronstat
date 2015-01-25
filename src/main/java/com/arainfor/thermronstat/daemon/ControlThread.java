@@ -51,7 +51,7 @@ public class ControlThread extends Thread {
 	// these map the GPIO to a RelayOutputs value
 	protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
 	protected Logger logger;
-	protected int sleep = Integer.parseInt(System.getProperty("poll.sleep", "1000"));
+	protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
 	private long currentRuntimeStart;
 
 	public ControlThread() {
@@ -143,7 +143,7 @@ public class ControlThread extends Thread {
 		log.info("loading...{}", propFileName);
 		Properties props = new PropertiesLoader(propFileName).getProps();
 
-		// Append the system properties with our applicaton properties
+		// Append the system properties with our application properties
 		props.putAll(System.getProperties());
 		System.setProperties(props);
 

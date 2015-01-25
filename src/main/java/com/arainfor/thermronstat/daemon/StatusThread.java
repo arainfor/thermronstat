@@ -33,7 +33,7 @@ public class StatusThread extends Thread {
     // these map the GPIO to a RelayInputs value
     protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
     protected Logger logger;
-    protected int sleep = Integer.parseInt(System.getProperty("poll.sleep", "1000"));
+    protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "300"));
 
     public StatusThread() {
 
@@ -74,12 +74,12 @@ public class StatusThread extends Thread {
         Options options = new Options();
         options.addOption("help", false, "This message isn't very helpful");
         options.addOption("version", false, "Print the version number");
-        options.addOption("mkdirs", false, "Create missing paths");
         options.addOption("monitor", false, "Start GUI Monitor");
         options.addOption("config", true, "The configuration file");
 
         CommandLineParser parser = new GnuParser();
         CommandLine cmd;
+
         try {
             cmd = parser.parse(options, args);
             if (cmd.hasOption("help")) {
@@ -104,7 +104,7 @@ public class StatusThread extends Thread {
         try {
             Properties props = new PropertiesLoader(propFileName).getProps();
 
-            // Append the system properties with our applicaton properties
+            // Append the system properties with our application properties
             props.putAll(System.getProperties());
             System.setProperties(props);
         } catch (FileNotFoundException fnfe) {}
@@ -117,14 +117,13 @@ public class StatusThread extends Thread {
 
     }
 
-
     @Override
     public void run() {
 
         while (true) {
             statusLogger.logRelays(relayMap);
             try {
-                sleep(300);
+                sleep(sleep);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
