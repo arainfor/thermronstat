@@ -11,6 +11,7 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -28,7 +29,6 @@ public class StatusThread extends Thread {
     private static int APPLICATION_VERSION_MAJOR = 1;
     private static int APPLICATION_VERSION_MINOR = 0;
     private static int APPLICATION_VERSION_BUILD = 0;
-    private static String logFileName = null;
     private static StatusLogger statusLogger;
     // these map the GPIO to a RelayInputs value
     protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
@@ -100,18 +100,16 @@ public class StatusThread extends Thread {
             propFileName = cmd.getOptionValue("config");
 
         log.info("loading...{}", propFileName);
-        Properties props = new PropertiesLoader(propFileName).getProps();
 
-        // Append the system properties with our applicaton properties
-        props.putAll(System.getProperties());
-        System.setProperties(props);
+        try {
+            Properties props = new PropertiesLoader(propFileName).getProps();
 
-        logFileName = System.getProperty("statusLogFileName", "/var/log/" + StatusThread.APPLICATION_NAME + ".log");
+            // Append the system properties with our applicaton properties
+            props.putAll(System.getProperties());
+            System.setProperties(props);
+        } catch (FileNotFoundException fnfe) {}
 
-        if (logFileName != null) {
-            log.info("logging to: {}", logFileName);
-            statusLogger = new StatusLogger(logFileName);
-        }
+        statusLogger = new StatusLogger();
 
         // Main entry point to launch the program
         StatusThread statusThread = new StatusThread();

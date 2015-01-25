@@ -22,6 +22,8 @@ public class AppLogger {
 	public Logger getLogger(String className) {
 		return LoggerFactory.getLogger(className);
 	}
-	
+	public Logger getLogger(Class aclass) {
+		return LoggerFactory.getLogger(aclass);
+	}
 
 }

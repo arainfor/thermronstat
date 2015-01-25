@@ -17,17 +17,10 @@ import java.util.HashMap;
 public class StatusLogger extends FileLogger {
 
     private static final Logger logger = LoggerFactory.getLogger(StatusLogger.class);
-    private FileOutputStream fos = null;
     private HashMap<Integer, Boolean> relayMapLast = new HashMap<Integer, Boolean>();
 
-    public StatusLogger(String logFileName) throws IOException {
-        super(logFileName);
-        try {
-            fos = new FileOutputStream(new File(logFileName), true);
-        } catch (FileNotFoundException e) {
-            logger.error("Exception:", e);
-        }
-
+    public StatusLogger() throws IOException {
+        super();
     }
 
 
@@ -58,13 +51,8 @@ public class StatusLogger extends FileLogger {
                 sb.append(entry);
                 sb.append(FieldDelimiter);
             }
-            sb.append(System.getProperty("line.separator"));
 
-            try {
-                fos.write(sb.toString().getBytes());
-            } catch (IOException e) {
-                logger.error("Exception:", e);
-            }
+            logger.info(sb.toString());
         }
 
         relayMapLast = relayMapNow;

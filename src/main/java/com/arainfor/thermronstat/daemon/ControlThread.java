@@ -48,7 +48,6 @@ public class ControlThread extends Thread {
 	private static int APPLICATION_VERSION_MAJOR = 2;
 	private static int APPLICATION_VERSION_MINOR = 0;
 	private static int APPLICATION_VERSION_BUILD = 0;
-	private static String logFileName = null;
 	// these map the GPIO to a RelayOutputs value
 	protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
 	protected Logger logger;
@@ -99,9 +98,6 @@ public class ControlThread extends Thread {
 					e.printStackTrace();
 				}  // Try to turn off the HVAC if we are terminated!!
 
-				if (thermlogger != null)
-					thermlogger.close();
-
 				logger.info(this.getClass().getName() + " terminated...");
 			}
 		}));
@@ -151,12 +147,7 @@ public class ControlThread extends Thread {
 		props.putAll(System.getProperties());
 		System.setProperties(props);
 
-		logFileName = System.getProperty("dataLogFileName", "/var/log/" + ControlThread.APPLICATION_NAME + ".log");
-
-		if (logFileName != null) {
-			log.info("logging to: {}", logFileName);
-			thermlogger = new ControlLogger(logFileName);
-		}
+		thermlogger = new ControlLogger();
 
 		String IO_BASE_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".IO_BASE_FS", "/var/" + APPLICATION_NAME.toLowerCase());
 
