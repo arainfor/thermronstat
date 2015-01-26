@@ -4,6 +4,7 @@ import com.arainfor.thermronstat.RelayDef;
 import org.apache.commons.cli.*;
 
 import java.io.*;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -76,6 +77,7 @@ public class LogReader {
      */
     public static void main(String[] args) throws IOException {
 
+        System.out.println("Starting...");
         Options options = new Options();
         options.addOption("log", true, "The log file");
         CommandLineParser parser = new GnuParser();
@@ -87,13 +89,15 @@ public class LogReader {
                 hf.printHelp(LogReader.class.getSimpleName(), options);
                 return;
             }
+            if (!cmd.hasOption("log")) {
+                HelpFormatter hf = new HelpFormatter();
+                hf.printHelp(LogReader.class.getSimpleName(), options);
+                return;
+            }
         } catch (org.apache.commons.cli.ParseException e) {
             e.printStackTrace();
             return;
         }
-
-        if (cmd.getOptionValue("log") == null)
-            System.exit(1);
 
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
@@ -149,7 +153,9 @@ public class LogReader {
         long average = totalRunTime / numCycles;
         long totalPeriod = periodEnd.getTime() - periodStart.getTime();
         double dutyCylce = (double)totalRunTime / (double)totalPeriod;
-        System.out.println("Num Cycles: " + numCycles + " Total Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + " Average:"  + lr.fmtHhMmSs(average) + " DutyCylce:" + dutyCylce);
+        NumberFormat defaultFormat = NumberFormat.getPercentInstance();
+        defaultFormat.setMinimumFractionDigits(1);
+        System.out.println("Num Cycles: " + numCycles + " Total Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + " Average:"  + lr.fmtHhMmSs(average) + " DutyCylce:" + defaultFormat.format(dutyCylce));
     }
 
     private String fmtHhMmSs(long millis) {
