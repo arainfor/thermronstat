@@ -42,7 +42,6 @@ public class StatusThread extends Thread {
         logger = new AppLogger().getLogger(this.getClass().getName());
         logger.info(this.getClass().getName() + " starting...");
 
-
         // setup gpio
         try {
 
