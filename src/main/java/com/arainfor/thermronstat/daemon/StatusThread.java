@@ -39,6 +39,13 @@ public class StatusThread extends Thread {
 
         super();
 
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                if (statusLogger != null)
+                    statusLogger.logMessage(APPLICATION_NAME + " shutdown!");
+            }
+        }));
+
         logger = new AppLogger().getLogger(this.getClass().getName());
         logger.info(this.getClass().getName() + " starting...");
 
@@ -118,6 +125,8 @@ public class StatusThread extends Thread {
 
     @Override
     public void run() {
+
+        statusLogger.logMessage(StatusThread.APPLICATION_NAME + " Startup...");
 
         while (true) {
             statusLogger.logRelays(relayMap);

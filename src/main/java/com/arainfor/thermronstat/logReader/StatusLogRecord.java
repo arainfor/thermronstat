@@ -20,10 +20,17 @@ public class StatusLogRecord {
     // 02:20:48.347 - G: false, Y1: false, Y2: false,
     public StatusLogRecord(String yyyymmdd, String thisLine) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        String time = thisLine.substring(0, thisLine.indexOf("-"));
+        String key = " - ";
+        int keyIdx = thisLine.indexOf(key);
+        int timeIdx = 0;
+
+        // old format didn't have date prefix
+        if (keyIdx > 12)
+            timeIdx = thisLine.indexOf(" ");
+        String time = thisLine.substring(timeIdx, keyIdx);
         date = formatter.parse(yyyymmdd + " " + time);
 
-        String key = RelayDef.G.toString() + ": ";
+        key = RelayDef.G.toString() + ": ";
         int gidx = thisLine.indexOf(key);
         String value = thisLine.substring(gidx + key.length(), thisLine.indexOf(",", gidx + key.length()));
         relays.put(RelayDef.G, value.equalsIgnoreCase(Boolean.TRUE.toString()));
