@@ -20,15 +20,16 @@ public class StatusLogRecord {
     // 02:20:48.347 - G: false, Y1: false, Y2: false,
     public StatusLogRecord(String yyyymmdd, String thisLine) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        String key = " - ";
+        String key = " - ";  // this separates date from relays.
         int keyIdx = thisLine.indexOf(key);
-        int timeIdx = 0;
 
-        // old format didn't have date prefix
-        if (keyIdx > 12)
-            timeIdx = thisLine.indexOf(" ");
-        String time = thisLine.substring(timeIdx, keyIdx);
-        date = formatter.parse(yyyymmdd + " " + time);
+        if (keyIdx > 12) {
+            date = formatter.parse(thisLine.substring(0, keyIdx));
+        } else {
+            // old format didn't have date prefix
+            String time = thisLine.substring(0, keyIdx);
+            date = formatter.parse(yyyymmdd + " " + time);
+        }
 
         key = RelayDef.G.toString() + ": ";
         int gidx = thisLine.indexOf(key);
@@ -59,6 +60,10 @@ public class StatusLogRecord {
         }
         System.out.println(slr.toString());
         System.out.println("Done");
+    }
+
+    public Date getDate() {
+        return date;
     }
 
     public String toString() {

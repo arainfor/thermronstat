@@ -2,6 +2,8 @@ package com.arainfor.thermronstat.logReader;
 
 import com.arainfor.thermronstat.RelayDef;
 import org.apache.commons.cli.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -18,6 +20,7 @@ import java.util.zip.ZipFile;
 public class LogReader {
 
     List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
+    Logger logger = LoggerFactory.getLogger(LogReader.class);
 
     public LogReader(String logFileName) {
 
@@ -61,15 +64,15 @@ public class LogReader {
             BufferedReader br = new BufferedReader(new InputStreamReader(stream));
 
             while ((thisLine = br.readLine()) != null) {
-                parse(dateString, thisLine);
+                try {
+                    parse(dateString, thisLine);
+                } catch (Exception e) {
+                    logger.warn("Cannot decode record:{}", thisLine);
+                }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Fatal Error:", e);
         }
-    }
-
-    private void parse(String yyyymmdd, String thisLine) throws ParseException {
-        statusLogRecord.add(new StatusLogRecord(yyyymmdd, thisLine));
     }
 
     /**
@@ -99,6 +102,7 @@ public class LogReader {
             return;
         }
 
+        // This is just our local output format.
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
         LogReader lr = new LogReader(cmd.getOptionValue("log"));
@@ -109,7 +113,6 @@ public class LogReader {
         Date fanStart = null;
         Date fanStop = null;
         Date firstStart = null;
-        Date lastStart = null;
         Date periodStart = null;
         Date periodEnd = null;
         long totalRunTime = 0;
@@ -127,16 +130,15 @@ public class LogReader {
                 fanStop = null;
                 if (firstStart == null)
                     firstStart = slr.date;
-                lastStart = slr.date;
-            }
-            else if (!slr.relays.get(RelayDef.G).booleanValue() && fanStart != null) {
+            } else if (!slr.relays.get(RelayDef.G).booleanValue() && fanStart != null) {
                 fanStop = slr.date;
             }
 
+            // Both start and stop set so we are done
             if (fanStart != null && fanStop != null) {
                 long diff = fanStop.getTime() - fanStart.getTime();//as given
 
-                System.out.println("Start: " +  formatter.format(fanStart) + " Stop: " + formatter.format(fanStop) + " Runtime: " + lr.fmtHhMmSs(diff));
+                System.out.println("Start: " + formatter.format(fanStart) + " Stop: " + formatter.format(fanStop) + " Runtime: " + lr.fmtHhMmSs(diff));
                 fanStart = null;
                 fanStop = null;
                 numCycles++;
@@ -152,10 +154,15 @@ public class LogReader {
 
         long average = totalRunTime / numCycles;
         long totalPeriod = periodEnd.getTime() - periodStart.getTime();
-        double dutyCylce = (double)totalRunTime / (double)totalPeriod;
+        double dutyCylce = (double) totalRunTime / (double) totalPeriod;
         NumberFormat defaultFormat = NumberFormat.getPercentInstance();
         defaultFormat.setMinimumFractionDigits(1);
-        System.out.println("Num Cycles: " + numCycles + " Total Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + " Average:"  + lr.fmtHhMmSs(average) + " DutyCylce:" + defaultFormat.format(dutyCylce));
+        System.out.println("Summary for Log:" + cmd.getOptionValue("log"));
+        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Cycles: " + numCycles + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + " Average:" + lr.fmtHhMmSs(average) + " DutyCylce:" + defaultFormat.format(dutyCylce));
+    }
+
+    private void parse(String yyyymmdd, String thisLine) throws ParseException {
+        statusLogRecord.add(new StatusLogRecord(yyyymmdd, thisLine));
     }
 
     private String fmtHhMmSs(long millis) {
@@ -184,6 +191,7 @@ public class LogReader {
         cal.setTimeInMillis(timems);
         return cal;
     }
+
     private long timeDiff(long fanStart, long fanStop) {
         long diff = fanStop - fanStart;//as given
 
