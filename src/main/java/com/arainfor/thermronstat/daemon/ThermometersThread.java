@@ -23,6 +23,7 @@ public class ThermometersThread extends Thread {
 
     public ThermometersThread() {
         super();
+        logger.info(this.getClass().getName() + " starting...");
     }
 
     @Override
@@ -35,10 +36,14 @@ public class ThermometersThread extends Thread {
 
             for (Temperature temperature: temperaturesList) {
                 Thermometer thermometer = thermometersList.get(temperature.getIndex());
-                try {
-                    temperature.setValue(thermometer.getDs18B20().getTempF());
-                } catch (IOException e) {
-                    logger.warn("Error reading thermometer " + thermometer.getName() + " Exception:" + e.getMessage());
+                if (thermometer.getDs18B20().getFilename().contains("unknown")) {
+                    temperature.setValue((double)0);
+                } else {
+                    try {
+                        temperature.setValue(thermometer.getDs18B20().getTempF());
+                    } catch (IOException e) {
+                        logger.warn("Error reading thermometer " + thermometer.getName() + " Exception:" + e.getMessage());
+                    }
                 }
             }
 

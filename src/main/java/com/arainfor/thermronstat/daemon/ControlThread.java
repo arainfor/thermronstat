@@ -57,30 +57,6 @@ public class ControlThread extends Thread {
 		logger = new AppLogger().getLogger(this.getClass().getName());
 		logger.info(this.getClass().getName() + " starting...");
 
-/*
-		// setup gpio
-		try {
-
-			relayG = new PiGPIO(new Pin(21), Direction.OUT);
-			relayY1 = new PiGPIO(new Pin(17), Direction.OUT);
-			relayY2 = new PiGPIO(new Pin(22), Direction.OUT);
-			relayW = new PiGPIO(new Pin(23), Direction.OUT);
-			relayO = new PiGPIO(new Pin(24), Direction.OUT);
-
-		} catch (IOException ioe) {
-			System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
-			ioe.printStackTrace();
-			System.exit(-1);
-		}
-
-		// map the relays
-		relayMap.add(new RelayMap(RelayDef.G, relayG, userGvalue));
-		relayMap.add(new RelayMap(RelayDef.Y1, relayY1, userY1value));
-		relayMap.add(new RelayMap(RelayDef.Y2, relayY2, userY2value));
-		relayMap.add(new RelayMap(RelayDef.W, relayW, userWvalue));
-		relayMap.add(new RelayMap(RelayDef.O, relayO, userOvalue));
-*/
-
 		// Add hook to turn off everything...
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {

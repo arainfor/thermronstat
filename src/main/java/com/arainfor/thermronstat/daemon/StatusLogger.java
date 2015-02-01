@@ -32,7 +32,7 @@ public class StatusLogger extends FileLogger {
         System.setProperties(props);
     }
 
-    public void logRelays(ArrayList<RelayMap> relayMap) {
+    public void logRelays(Map<RelayMap, Boolean> statusRelayValue) {
 
         HashMap<Integer, Boolean> relayMapNow = new HashMap<Integer, Boolean>();
         boolean dirty = false;
@@ -41,19 +41,17 @@ public class StatusLogger extends FileLogger {
         ArrayList<Temperature> temperaturesList = TemperaturesList.getInstance().list();
 
         // Read the relays...
-        for (int i = 0; i < relayMap.size(); i++) {
-            try {
-                relayMapNow.put(i, relayMap.get(i).getPiGPIO().getValue());
-                if (relayMapNow.get(i) != relayMapLast.get(i)) {
-                    // if any relay position changed then we want a log entry.
-                    dirty = true;
-                    if (relayMapNow.get(i)) {
-                        // if any relay is closed then we are not shutdown
-                        shutdown = false;
-                    }
+        Set<Map.Entry<RelayMap, Boolean>> relays = statusRelayValue.entrySet();
+        for (RelayMap relay  : statusRelayValue.keySet()) {
+            int idx = relay.getRelayDef().ordinal();
+            relayMapNow.put(idx, statusRelayValue.get(relay));
+            if (relayMapNow.get(idx) != relayMapLast.get(idx)) {
+                // if any relay position changed then we want a log entry.
+                dirty = true;
+                if (relayMapNow.get(idx)) {
+                    // if any relay is closed then we are not shutdown
+                    shutdown = false;
                 }
-            } catch (IOException e) {
-                logger.warn("Error reading relay:{}", relayMap.get(i).getRelayDef(), e);
             }
         }
 
@@ -61,14 +59,16 @@ public class StatusLogger extends FileLogger {
         if (dirty) {
             StringBuffer sb = new StringBuffer();
             logHeader(sb);
-            for (int i = 0; i < relayMap.size(); i++) {
-                String entry = relayMap.get(i).getRelayDef() + ": " + relayMapNow.get(i);
+
+            for (RelayMap relay  : statusRelayValue.keySet()) {
+                int idx = relay.getRelayDef().ordinal();
+                String entry = relay.getRelayDef() + ": " + relayMapNow.get(idx);
                 sb.append(entry);
                 sb.append(FieldDelimiter);
             }
 
             // add the string to our event list
-            eventList.add(sb.toString() + ", " + temperaturesList.get(0).toString() + temperaturesList.get(2).toString() + ", " + temperaturesList.get(3).toString());
+            eventList.add(sb.toString() + ", " + temperaturesList.get(0).toString() + ", " + temperaturesList.get(2).toString() + ", " + temperaturesList.get(3).toString());
 
             if (shutdown) {
                 // the system just shutdown so record all the completed cycle's

@@ -2,7 +2,6 @@ package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.RelayMap;
 import com.arainfor.thermronstat.StatusRelayCache;
-import com.arainfor.thermronstat.StatusRelaysList;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
@@ -11,29 +10,52 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by arainfor on 1/24/15.
+ * Created by ARAINFOR on 1/31/2015.
  */
-public class StatusThread extends Thread {
+public class HvacMonitor extends Thread {
 
-    // relays
-    protected static String APPLICATION_NAME = "StatusMonitor";
+    protected static String APPLICATION_NAME = "HvacMonitor";
     protected static int APPLICATION_VERSION_MAJOR = 1;
     protected static int APPLICATION_VERSION_MINOR = 0;
     protected static int APPLICATION_VERSION_BUILD = 0;
+    private static StatusLogger statusLogger;
     protected Logger logger;
-    protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "300"));
+    protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
 
-    public StatusThread() {
+    public HvacMonitor() {
 
         super();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                if (statusLogger != null)
+                    statusLogger.logMessage(APPLICATION_NAME + " shutdown!");
+            }
+        }));
 
         logger = new AppLogger().getLogger(this.getClass().getName());
         logger.info(this.getClass().getName() + " starting...");
 
+    }
+
+    @Override
+    public void run() {
+
+        statusLogger.logMessage(StatusThread.APPLICATION_NAME + " Startup...");
+
+        while (true) {
+            Map<RelayMap, Boolean> statusRelayCache = StatusRelayCache.getInstance().getCache();
+            statusLogger.logRelays(statusRelayCache);
+            try {
+                sleep(sleep);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -41,7 +63,7 @@ public class StatusThread extends Thread {
      */
     public static void main(String[] args) throws IOException {
 
-        Logger log = LoggerFactory.getLogger(StatusThread.class);
+        Logger log = LoggerFactory.getLogger(HvacMonitor.class);
 
         //System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
         Options options = new Options();
@@ -64,7 +86,7 @@ public class StatusThread extends Thread {
                 System.out.println("The " + APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
             }
         } catch (ParseException e) {
-            System.err.println("Parse error:" + e);
+            e.printStackTrace();
             return;
         }
 
@@ -82,36 +104,18 @@ public class StatusThread extends Thread {
             System.setProperties(props);
         } catch (FileNotFoundException fnfe) {}
 
+        statusLogger = new StatusLogger();
+
+        log.info("spawning task to read thermometers");
         ThermometersThread thermometersThread = new ThermometersThread();
         thermometersThread.start();
 
-        // Main entry point to launch the program
+        log.info("spawning task to log status changes");
         StatusThread statusThread = new StatusThread();
         statusThread.start();
 
+        new HvacMonitor().start();
+
     }
 
-    @Override
-    public void run() {
-
-        ArrayList<RelayMap> relaysList = StatusRelaysList.getInstance().list();
-        StatusRelayCache statusRelayCache = StatusRelayCache.getInstance();
-
-        while (true) {
-            for (RelayMap relay : relaysList) {
-                try {
-                    statusRelayCache.setValue(relay, relay.getPiGPIO().getValue());
-                } catch (IOException e) {
-                    logger.error("Error reading relay:", e);
-                    e.printStackTrace();
-                }
-            }
-
-            try {
-                sleep(sleep);
-            } catch (InterruptedException e) {
-                logger.error("Thread interrupted!:", e);
-            }
-        }
-    }
 }
