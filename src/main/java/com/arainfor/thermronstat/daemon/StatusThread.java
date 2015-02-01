@@ -115,6 +115,9 @@ public class StatusThread extends Thread {
             System.setProperties(props);
         } catch (FileNotFoundException fnfe) {}
 
+        ThermometersThread thermometersThread = new ThermometersThread();
+        thermometersThread.start();
+
         statusLogger = new StatusLogger();
 
         // Main entry point to launch the program

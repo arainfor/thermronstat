@@ -1,8 +1,8 @@
 package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.RelayMap;
-import com.arainfor.thermronstat.Thermometer;
-import com.arainfor.thermronstat.ThermometersList;
+import com.arainfor.thermronstat.Temperature;
+import com.arainfor.thermronstat.TemperaturesList;
 import com.arainfor.util.file.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,13 +17,9 @@ import java.util.*;
 public class StatusLogger extends FileLogger {
 
     private static final Logger logger = LoggerFactory.getLogger(StatusLogger.class);
-    protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
-    // The 1wire DS18B20's are connected to GPIO4 pin.
-    String SYS_BUS_FS = System.getProperty(StatusThread.APPLICATION_NAME.toLowerCase() + ".SYS_BUS_FS", "/sys/bus/w1/devices/");
     String propFileName = "thermostat.properties";
     private HashMap<Integer, Boolean> relayMapLast = new HashMap<Integer, Boolean>();
     private List<String> eventList = Collections.synchronizedList(new ArrayList());
-
 
     public StatusLogger() throws IOException {
         super();
@@ -34,7 +30,6 @@ public class StatusLogger extends FileLogger {
         // Append the system properties with our application properties
         props.putAll(System.getProperties());
         System.setProperties(props);
-        thermometers = new ThermometersList().list();
     }
 
     public void logRelays(ArrayList<RelayMap> relayMap) {
@@ -42,6 +37,8 @@ public class StatusLogger extends FileLogger {
         HashMap<Integer, Boolean> relayMapNow = new HashMap<Integer, Boolean>();
         boolean dirty = false;
         boolean shutdown = true;
+
+        ArrayList<Temperature> temperaturesList = TemperaturesList.getInstance().list();
 
         // Read the relays...
         for (int i = 0; i < relayMap.size(); i++) {
@@ -71,7 +68,7 @@ public class StatusLogger extends FileLogger {
             }
 
             // add the string to our event list
-            eventList.add(sb.toString() + ", " + thermometers.get(0).toString() + ", " + thermometers.get(2).toString() + ", " + thermometers.get(3).toString());
+            eventList.add(sb.toString() + ", " + temperaturesList.get(0).toString() + temperaturesList.get(2).toString() + ", " + temperaturesList.get(3).toString());
 
             if (shutdown) {
                 // the system just shutdown so record all the completed cycle's

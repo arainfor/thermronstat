@@ -12,22 +12,14 @@ import java.nio.charset.Charset;
  */
 public class DS18B20 {
 
-    String filename = null;
+	// The 1wire DS18B20's are connected to GPIO4 pin.
+	String SYS_BUS_FS = "/sys/bus/w1/devices/";
 
-	public DS18B20(String filename) {
-        this.filename = filename;
+	String filename = null;
+
+	public DS18B20(String serialId) {
+        this.filename = SYS_BUS_FS + serialId + "/w1_slave";
     }
-
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-		DS18B20 sensor = new DS18B20("/home/arainfor/tmp/w1_slave");
-
-		System.err.println(sensor.CelToFar(sensor.readRaw()));
-
-	}
 
     public String getFilename() {
         return filename;

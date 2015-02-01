@@ -3,6 +3,8 @@
  */
 package com.arainfor.thermronstat.gui;
 
+import com.arainfor.thermronstat.Thermometer;
+import com.arainfor.thermronstat.ThermometersList;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.PiGPIO;
@@ -16,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -210,23 +213,13 @@ public class Monitor {
         stage1Control = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
         statusControl = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
 
-        String SYS_BUS_FS = System.getProperty("thermronstat.SYS_BUS_FS", "/sys/bus/w1/devices/");
-
-        String indoorFilename = SYS_BUS_FS + System.getProperty("0.source") + "/w1_slave";
-        String outdoorFilename = SYS_BUS_FS + System.getProperty("1.source") + "/w1_slave";
-        String plenumFilename = SYS_BUS_FS + System.getProperty("2.source") + "/w1_slave";
-        String returnFilename = SYS_BUS_FS + System.getProperty("3.source") + "/w1_slave";
-
-        indoorSensor = new DS18B20(indoorFilename);
-        outdoorSensor = new DS18B20(outdoorFilename);
-        plenumSensor = new DS18B20(plenumFilename);
-        returnSensor = new DS18B20(returnFilename);
+        ArrayList<Thermometer> thermometers = new ThermometersList().list();
 
         System.out.println("Target Temperature File: " + targetControl);
-        System.out.println("Indoor Temperature Name: " + System.getProperty("0.name") + " File: " + indoorFilename);
-        System.out.println("Outdoor Temperature Name: " + System.getProperty("1.name") + " File: " + outdoorFilename);
-        System.out.println("Plenum Temperature Name: " + System.getProperty("2.name") + " File: " + plenumFilename);
-        System.out.println("Return Temperature Name: " + System.getProperty("3.name") + " File: " + returnFilename);
+        System.out.println("Indoor Temperature Name: " + thermometers.get(0).getName() + " File: " + thermometers.get(0).getDs18B20().getFilename());
+        System.out.println("Outdoor Temperature Name: " + thermometers.get(1).getName() + " File: " + thermometers.get(1).getDs18B20().getFilename());
+        System.out.println("Plenum Temperature Name: " + thermometers.get(2).getName() + " File: " + thermometers.get(2).getDs18B20().getFilename());
+        System.out.println("Return Temperature Name: " + thermometers.get(3).getName() + " File: " + thermometers.get(3).getDs18B20().getFilename());
         System.out.println("Relay Control File: " + stage1Control);  // Is the system currently running?
         System.out.println("System Available Control File: " + statusControl);  // User desired state of relay, on or off
 

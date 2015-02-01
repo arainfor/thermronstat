@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.arainfor.util.logger;
 
 import org.slf4j.Logger;

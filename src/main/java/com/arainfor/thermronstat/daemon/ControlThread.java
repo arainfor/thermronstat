@@ -46,7 +46,7 @@ public class ControlThread extends Thread {
 	private static int APPLICATION_VERSION_BUILD = 0;
 	// these map the GPIO to a RelayOutputs value
 	protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
-	protected Logger logger;
+	private static Logger logger;
 	protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
 	private long currentRuntimeStart;
 

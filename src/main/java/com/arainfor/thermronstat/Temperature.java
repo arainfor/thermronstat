@@ -1,26 +1,19 @@
 package com.arainfor.thermronstat;
 
-import com.arainfor.util.file.io.thermometer.DS18B20;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 import java.text.NumberFormat;
 
 /**
  * Created by arainfor on 1/10/15.
  */
-public class Thermometer {
+public class Temperature {
 
     private final int index;
     private final String name;
-    private final DS18B20 ds18B20;
-    private static final Logger logger = LoggerFactory.getLogger(Thermometer.class);
+    private Double value = Double.MIN_VALUE;
 
-    public Thermometer(int index, String name, DS18B20 ds18B20) {
+    public Temperature(int index, String name) {
         this.index = index;
         this.name = name;
-        this.ds18B20 = ds18B20;
     }
 
     public int getIndex() {
@@ -31,8 +24,11 @@ public class Thermometer {
         return name;
     }
 
-    public DS18B20 getDs18B20() {
-        return ds18B20;
+    public Double getValue() {
+        return value;
+    }
+    public void setValue(Double value) {
+        this.value = value;
     }
 
     public String toString() {
@@ -45,11 +41,7 @@ public class Thermometer {
         sb.append(": ");
         String temperature = Integer.toString(Integer.MIN_VALUE);
 
-        try {
-            temperature = nf.format(ds18B20.getTempF());
-        } catch (IOException e) {
-            logger.warn("Error reading thermometer " + ds18B20.getFilename() + " Exception:" + e.getMessage());
-        }
+        temperature = nf.format(getValue());
 
         return new String(name + ": " + temperature);
     }
