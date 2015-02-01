@@ -25,10 +25,10 @@ public class StatusThread extends Thread {
     protected static PiGPIO relayG;   // relay for Fan G
     protected static PiGPIO relayY1;  // relay for Stage 1
     protected static PiGPIO relayY2;  // relay for Stage 2
-    private static String APPLICATION_NAME = "HvacMonitor";
-    private static int APPLICATION_VERSION_MAJOR = 1;
-    private static int APPLICATION_VERSION_MINOR = 0;
-    private static int APPLICATION_VERSION_BUILD = 0;
+    protected static String APPLICATION_NAME = "HvacMonitor";
+    protected static int APPLICATION_VERSION_MAJOR = 1;
+    protected static int APPLICATION_VERSION_MINOR = 0;
+    protected static int APPLICATION_VERSION_BUILD = 0;
     private static StatusLogger statusLogger;
     // these map the GPIO to a RelayInputs value
     protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();

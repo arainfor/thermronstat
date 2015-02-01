@@ -11,12 +11,12 @@ import java.nio.charset.Charset;
  *
  */
 public class DS18B20 {
-	
-	String _filename = null;
+
+    String filename = null;
 
 	public DS18B20(String filename) {
-		_filename = filename;
-	}
+        this.filename = filename;
+    }
 
 	/**
 	 * @param args
@@ -28,8 +28,12 @@ public class DS18B20 {
 		System.err.println(sensor.CelToFar(sensor.readRaw()));
 
 	}
-	
-	public Double getTempF() throws IOException {
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public Double getTempF() throws IOException {
 		return CelToFar(readRaw());
 
 	}
@@ -39,13 +43,13 @@ public class DS18B20 {
 	}
 
 	protected Double readRaw() throws IOException {
-		if (!_filename.equalsIgnoreCase("unknown")) {
-			InputStream fis;
+        if (!filename.equalsIgnoreCase("unknown")) {
+            InputStream fis;
 			BufferedReader br;
 			String line;
 
-			fis = new FileInputStream(_filename);
-			br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+            fis = new FileInputStream(filename);
+            br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
 
 			line = br.readLine();
 

@@ -3,15 +3,11 @@
  */
 package com.arainfor.thermronstat.daemon;
 
-import com.arainfor.thermronstat.H1TemperatureControl;
-import com.arainfor.thermronstat.RelayDef;
-import com.arainfor.thermronstat.RelayMap;
-import com.arainfor.thermronstat.Thermometer;
+import com.arainfor.thermronstat.*;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
 import com.arainfor.util.file.io.gpio.PiGPIO;
-import com.arainfor.util.file.io.thermometer.DS18B20;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -168,25 +164,14 @@ public class ControlThread extends Thread {
 		userWvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/3");
 		userOvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/4");
 
-		// The 1wire DS18B20's are connected to GPIO4 pin.
-		String SYS_BUS_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".SYS_BUS_FS", "/sys/bus/w1/devices/");
-
-		String indoorFilename = SYS_BUS_FS + System.getProperty("0.source") + "/w1_slave";
-		String outdoorFilename = SYS_BUS_FS + System.getProperty("1.source") + "/w1_slave";
-		String plenumFilename = SYS_BUS_FS + System.getProperty("2.source") + "/w1_slave";
-		String returnFilename = SYS_BUS_FS + System.getProperty("3.source") + "/w1_slave";
-
-		thermometers.add(new Thermometer(0, System.getProperty("0.name"), new DS18B20(indoorFilename)));
-		thermometers.add(new Thermometer(1, System.getProperty("1.name"), new DS18B20(outdoorFilename)));
-		thermometers.add(new Thermometer(2, System.getProperty("2.name"), new DS18B20(plenumFilename)));
-		thermometers.add(new Thermometer(3, System.getProperty("3.name"), new DS18B20(returnFilename)));
+        thermometers = new ThermometersList().list();
 
 		System.out.println("Target Temperature File: " + userTargetTempValue);
-		System.out.println("Indoor Temperature Name: " + System.getProperty("0.name") + " File: " + indoorFilename);
-		System.out.println("Outdoor Temperature Name: " + System.getProperty("1.name") + " File: " + outdoorFilename);
-		System.out.println("Plenum Temperature Name: " + System.getProperty("2.name") + " File: " + plenumFilename);
-		System.out.println("Return Temperature Name: " + System.getProperty("3.name") + " File: " + returnFilename);
-		System.out.println("Relay Control File: " + userY1value);  // Is the system currently running?
+        System.out.println("Indoor Temperature Name: " + thermometers.get(0).getName() + " File: " + thermometers.get(0).getDs18B20().getFilename());
+        System.out.println("Outdoor Temperature Name: " + thermometers.get(1).getName() + " File: " + thermometers.get(1).getDs18B20().getFilename());
+        System.out.println("Plenum Temperature Name: " + thermometers.get(2).getName() + " File: " + thermometers.get(2).getDs18B20().getFilename());
+        System.out.println("Return Temperature Name: " + thermometers.get(3).getName() + " File: " + thermometers.get(3).getDs18B20().getFilename());
+        System.out.println("Relay Control File: " + userY1value);  // Is the system currently running?
 		System.out.println("System Available Control File: " + statusControlValue);  // User desired state of relay, on or off
 
 		// Main entry point to launch the program

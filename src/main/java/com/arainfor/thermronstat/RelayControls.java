@@ -14,6 +14,14 @@ public class RelayControls {
         return relaysEnergized;
     }
 
+    public ArrayList<RelayDef> heatStage2() {
+        ArrayList<RelayDef> relaysEnergized = new ArrayList<RelayDef>();
+        relaysEnergized.add(RelayDef.G);
+        relaysEnergized.add(RelayDef.Y1);
+        relaysEnergized.add(RelayDef.Y2);
+        return relaysEnergized;
+    }
+
     public ArrayList<RelayDef> coolStage1() {
         ArrayList<RelayDef> relaysEnergized = new ArrayList<RelayDef>();
         relaysEnergized.add(RelayDef.G);
