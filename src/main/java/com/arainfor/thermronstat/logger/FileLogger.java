@@ -1,4 +1,4 @@
-package com.arainfor.thermronstat.daemon;
+package com.arainfor.thermronstat.logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -8,8 +8,8 @@ import java.util.Date;
  */
 public class FileLogger {
 
-    final String FieldDelimiter = ", ";
-    final String LineSeparator = System.getProperty("line.separator");
+    public static final String FieldDelimiter = ", ";
+    public static final String LineSeparator = System.getProperty("line.separator");
 
     protected void logHeader(StringBuffer sb) {
         //sb.append("Time: " + System.currentTimeMillis() + FieldDelimiter);

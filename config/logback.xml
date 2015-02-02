@@ -53,11 +53,11 @@
         </encoder>
     </appender>
 
-    <logger name="com.arainfor.thermronstat.daemon.ControlLogger">
+    <logger name="com.arainfor.thermronstat.logger.ControlLogger">
         <appender-ref ref="CONTROL"/>
     </logger>
 
-    <logger name="com.arainfor.thermronstat.daemon.StatusLogger">
+    <logger name="com.arainfor.thermronstat.logger.StatusLogger">
         <appender-ref ref="STATUS"/>
     </logger>
 

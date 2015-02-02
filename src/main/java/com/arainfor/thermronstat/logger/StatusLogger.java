@@ -1,4 +1,4 @@
-package com.arainfor.thermronstat.daemon;
+package com.arainfor.thermronstat.logger;
 
 import com.arainfor.thermronstat.RelayMap;
 import com.arainfor.thermronstat.Temperature;

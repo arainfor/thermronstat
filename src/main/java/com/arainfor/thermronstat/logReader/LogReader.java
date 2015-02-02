@@ -1,6 +1,7 @@
 package com.arainfor.thermronstat.logReader;
 
 import com.arainfor.thermronstat.RelayDef;
+import com.arainfor.thermronstat.logger.FileLogger;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class LogReader {
             String[] tokens = logFileName.split("\\.");
             dateString = tokens[1];
         }
-        String thisLine = null;
+        String thisLine;
         try {
 
             InputStream stream;
@@ -158,7 +159,8 @@ public class LogReader {
         NumberFormat defaultFormat = NumberFormat.getPercentInstance();
         defaultFormat.setMinimumFractionDigits(1);
         System.out.println("Summary for Log:" + cmd.getOptionValue("log"));
-        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Cycles: " + numCycles + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + " Average:" + lr.fmtHhMmSs(average) + " DutyCylce:" + defaultFormat.format(dutyCylce));
+        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + FileLogger.LineSeparator +
+                " Cycles: " + numCycles + " Average:" + lr.fmtHhMmSs(average) + " DutyCylce:" + defaultFormat.format(dutyCylce));
     }
 
     private void parse(String yyyymmdd, String thisLine) throws ParseException {

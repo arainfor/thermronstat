@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * This class reads the thermometers in a thread and provides non blocking getters for outside world.
+ * This class reads the thermometers in a thread and saves the values in a TemperaturesList object.
  *
  * Created by ARAINFOR on 1/31/2015.
  */

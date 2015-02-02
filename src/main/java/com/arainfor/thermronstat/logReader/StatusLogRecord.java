@@ -23,7 +23,7 @@ public class StatusLogRecord {
         String key = " - ";  // this separates date from relays.
         int keyIdx = thisLine.indexOf(key);
 
-        if (keyIdx > 12) {
+        if (keyIdx > "HH:mm:ss.SSS".length()) {
             date = formatter.parse(thisLine.substring(0, keyIdx));
         } else {
             // old format didn't have date prefix
@@ -32,18 +32,18 @@ public class StatusLogRecord {
         }
 
         key = RelayDef.G.toString() + ": ";
-        int gidx = thisLine.indexOf(key);
-        String value = thisLine.substring(gidx + key.length(), thisLine.indexOf(",", gidx + key.length()));
+        int idx = thisLine.indexOf(key);
+        String value = thisLine.substring(idx + key.length(), thisLine.indexOf(",", idx + key.length()));
         relays.put(RelayDef.G, value.equalsIgnoreCase(Boolean.TRUE.toString()));
 
         key = RelayDef.Y1.toString() + ": ";
-        gidx = thisLine.indexOf(key);
-        value = thisLine.substring(gidx + key.length(), thisLine.indexOf(",", gidx + key.length()));
+        idx = thisLine.indexOf(key);
+        value = thisLine.substring(idx + key.length(), thisLine.indexOf(",", idx + key.length()));
         relays.put(RelayDef.Y1, value.equalsIgnoreCase(Boolean.TRUE.toString()));
 
         key = RelayDef.Y2.toString() + ": ";
-        gidx = thisLine.indexOf(key);
-        value = thisLine.substring(gidx + key.length(), thisLine.indexOf(",", gidx + key.length()));
+        idx = thisLine.indexOf(key);
+        value = thisLine.substring(idx + key.length(), thisLine.indexOf(",", idx + key.length()));
         relays.put(RelayDef.Y2, value.equalsIgnoreCase(Boolean.TRUE.toString()));
     }
 

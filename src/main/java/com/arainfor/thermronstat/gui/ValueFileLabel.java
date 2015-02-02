@@ -12,13 +12,13 @@ public class ValueFileLabel extends JPanel implements ActionListener {
     private final Timer timer = new Timer(1000, this);
     private final JLabel descriptionLabel = new JLabel();
     private final JLabel valueLabel = new JLabel();
-    protected ValueFileIO _vfioMonitor;
+    protected ValueFileIO vfioMonitor;
     protected boolean showBool;
 
     public ValueFileLabel(String description, ValueFileIO vfioMonitor, boolean bool) {
         super(true);
 
-        _vfioMonitor = vfioMonitor;
+        this.vfioMonitor = vfioMonitor;
         showBool = bool;
         descriptionLabel.setText(description);
         add(descriptionLabel);
@@ -32,9 +32,9 @@ public class ValueFileLabel extends JPanel implements ActionListener {
 
         try {
             if (showBool)
-                valueLabel.setText(new Boolean(_vfioMonitor.read()).toString());
+                valueLabel.setText(new Boolean(vfioMonitor.read()).toString());
             else
-                valueLabel.setText(_vfioMonitor.readDouble() + "");
+                valueLabel.setText(vfioMonitor.readDouble() + "");
         } catch (IOException e) {
             e.printStackTrace();
         }

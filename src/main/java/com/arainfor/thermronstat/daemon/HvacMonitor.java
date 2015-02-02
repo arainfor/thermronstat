@@ -2,6 +2,7 @@ package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.RelayMap;
 import com.arainfor.thermronstat.StatusRelayCache;
+import com.arainfor.thermronstat.logger.StatusLogger;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;

@@ -4,6 +4,7 @@
 package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.*;
+import com.arainfor.thermronstat.logger.ControlLogger;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
@@ -39,7 +40,7 @@ public class ControlThread extends Thread {
 	protected static ValueFileIO userTargetTempValue;  // This file is the user target temperature
 	protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
 	static String oldSingleMsg;
-	private static ControlLogger thermlogger;
+	private static ControlLogger controlLogger;
 	private static String APPLICATION_NAME = "ThermRonStat";
 	private static int APPLICATION_VERSION_MAJOR = 2;
 	private static int APPLICATION_VERSION_MINOR = 0;
@@ -64,7 +65,7 @@ public class ControlThread extends Thread {
 				try {
 					relayY1.setValue(false);
 					statusControlValue.write(0);
-					thermlogger.logSystemOnOff(false);
+					controlLogger.logSystemOnOff(false);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}  // Try to turn off the HVAC if we are terminated!!
@@ -118,7 +119,7 @@ public class ControlThread extends Thread {
 		props.putAll(System.getProperties());
 		System.setProperties(props);
 
-		thermlogger = new ControlLogger();
+		controlLogger = new ControlLogger();
 
 		String IO_BASE_FS = System.getProperty(APPLICATION_NAME.toLowerCase() + ".IO_BASE_FS", "/var/" + APPLICATION_NAME.toLowerCase());
 
@@ -180,7 +181,7 @@ public class ControlThread extends Thread {
 
 				// Display a message if we toggled systemStatus.
 				if (systemStatus != lastSystemStatus) {
-					thermlogger.logSystemOnOff(systemStatus);
+					controlLogger.logSystemOnOff(systemStatus);
 					if (!systemStatus)
 						logger.info("Turning System OFF");
 					else
@@ -231,14 +232,14 @@ public class ControlThread extends Thread {
 					currentRuntimeStart = System.currentTimeMillis();
 			} else {
 				if (currentRuntimeStart > 0) {
-					thermlogger.logRuntime(System.currentTimeMillis() - currentRuntimeStart);
+					controlLogger.logRuntime(System.currentTimeMillis() - currentRuntimeStart);
 					currentRuntimeStart = 0;
 				}
 			}
 
 			logSingle("Run?" + stage1Enable + " target:" + targetTemp + " indoorTemp:" + indoorTemp + " " + " stage1RelayPosition:" + stage1RelayPosition);
 
-			thermlogger.logSummary(relaysEnabled, thermometers);
+			controlLogger.logSummary(relaysEnabled, thermometers);
 
 			try {
 				// loop thru all the relays and set values accordingly.
