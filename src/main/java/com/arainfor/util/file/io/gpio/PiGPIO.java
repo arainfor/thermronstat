@@ -101,20 +101,23 @@ public class PiGPIO {
         if (foreignHardware)
             return false;
 
-
-        BufferedReader br = new BufferedReader(new FileReader(IO_BASE_FS + "gpio" + pin + "/value"));
         StringBuilder sb = new StringBuilder();
-
         try {
-            String line = br.readLine();
+            BufferedReader br = new BufferedReader(new FileReader(IO_BASE_FS + "gpio" + pin + "/value"));
+            try {
+                String line = br.readLine();
 
-            if (line != null) {
-                sb.append(line);
+                if (line != null) {
+                    sb.append(line);
+                }
+
+            } finally {
+                br.close();
             }
-
-        } finally {
-            br.close();
+        } catch (Exception e) {
+            throw new IOException("getValue reader error:" + e);
         }
+
         return Integer.parseInt(sb.toString()) != 0;
     }
 

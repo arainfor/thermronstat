@@ -1,8 +1,8 @@
 package com.arainfor.thermronstat.logReader;
 
 import com.arainfor.thermronstat.RelayDef;
-import com.arainfor.thermronstat.logger.FileLogger;
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,25 +106,69 @@ public class LogReader {
         // This is just our local output format.
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
+        System.out.println("Parsing Log:" + cmd.getOptionValue("log"));
         LogReader lr = new LogReader(cmd.getOptionValue("log"));
+        System.out.println("Parsed " + lr.statusLogRecord.size() + " records");
 
         //LogReader lr = new LogReader("data\\status.2015-01-24.log.zip");
         //LogReader lr = new LogReader("data\\status.log");
 
         Date fanStart = null;
         Date fanStop = null;
+        Date y2Start = null;
+        Date y2Stop = null;
+        Date y1Start = null;
+        Date y1Stop = null;
         Date firstStart = null;
         Date periodStart = null;
         Date periodEnd = null;
         long totalRunTime = 0;
         long shortestRun = Long.MAX_VALUE;
         long longestRun = 0;
-        int numCycles = 0;
+        long y1Runtime = 0;
+        long y2Runtime = 0;
+        int fanCycles = 0;
+        int y1Cycles = 0;
+        int y2Cycles = 0;
 
         for (StatusLogRecord slr : lr.statusLogRecord) {
             periodEnd = slr.date;
             if (periodStart == null)
                 periodStart = slr.date;
+
+            // count stage1 cycles
+            if (slr.relays.get(RelayDef.Y1).booleanValue() && y1Start == null) {
+                y1Start = slr.date;
+                y1Stop = null;
+            } else if (!slr.relays.get(RelayDef.Y1).booleanValue() && y1Start != null) {
+                y1Stop = slr.getDate();
+            }
+
+            // stage1 clycle complete
+            if (y1Start != null && y1Stop != null) {
+                y1Stop = slr.getDate();
+                y1Runtime += y1Stop.getTime() - y1Start.getTime();
+                y1Start = null;
+                y1Stop = null;
+                y1Cycles++;
+            }
+
+            // count stage2 cycles
+            if (slr.relays.get(RelayDef.Y2).booleanValue() && y2Start == null) {
+                y2Start = slr.date;
+                y2Stop = null;
+            } else if (!slr.relays.get(RelayDef.Y2).booleanValue() && y2Start != null) {
+                y2Stop = slr.getDate();
+            }
+
+            // stage2 clycle complete
+            if (y2Start != null && y2Stop != null) {
+                y2Stop = slr.getDate();
+                y2Runtime += y2Stop.getTime() - y2Start.getTime();
+                y2Start = null;
+                y2Stop = null;
+                y2Cycles++;
+            }
 
             if (slr.relays.get(RelayDef.G).booleanValue() && fanStart == null) {
                 fanStart = slr.date;
@@ -142,7 +186,7 @@ public class LogReader {
                 System.out.println("Start: " + formatter.format(fanStart) + " Stop: " + formatter.format(fanStop) + " Runtime: " + lr.fmtHhMmSs(diff));
                 fanStart = null;
                 fanStop = null;
-                numCycles++;
+                fanCycles++;
                 totalRunTime += diff;
                 if (diff < shortestRun)
                     shortestRun = diff;
@@ -153,14 +197,18 @@ public class LogReader {
             //System.out.println(slr.toString());
         }
 
-        long average = totalRunTime / numCycles;
+        long average = totalRunTime / fanCycles;
         long totalPeriod = periodEnd.getTime() - periodStart.getTime();
-        double dutyCylce = (double) totalRunTime / (double) totalPeriod;
+        double dutyCycle = (double) totalRunTime / (double) totalPeriod;
         NumberFormat defaultFormat = NumberFormat.getPercentInstance();
         defaultFormat.setMinimumFractionDigits(1);
-        System.out.println("Summary for Log:" + cmd.getOptionValue("log"));
-        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun) + FileLogger.LineSeparator +
-                " Cycles: " + numCycles + " Average:" + lr.fmtHhMmSs(average) + " DutyCylce:" + defaultFormat.format(dutyCylce));
+        String msg = StringUtils.center(" Summary for Log:" + cmd.getOptionValue("log") + " ", 80, '*');
+        System.out.println(msg);
+
+        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun));
+        System.out.println("Cycles: " + fanCycles + " Average:" + lr.fmtHhMmSs(average) + " DutyCycle:" + defaultFormat.format(dutyCycle));
+        System.out.println("Heat: " + y1Cycles + " Runtime:" + lr.fmtHhMmSs(y1Runtime) + " Aux: " + y2Cycles + " Runtime:" + lr.fmtHhMmSs(y2Runtime));
+
     }
 
     private void parse(String yyyymmdd, String thisLine) throws ParseException {
