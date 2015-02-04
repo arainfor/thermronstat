@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * @author arainfor
  *
  */
-public class H1TemperatureControl {
+public class SingleStageHvacHandler {
 
 	private static final long MIN_RUNTIME = Long.parseLong(System.getProperty("MIN_RUNTIME", String.valueOf(1000 * 60 * 5)));
 	private static final long MAX_ANTICIPATOR_RUNTIME = Long.parseLong(System.getProperty("MAX_ANTICIPATOR_RUNTIME", String.valueOf(1000 * 60 * 15)));
@@ -26,8 +26,8 @@ public class H1TemperatureControl {
 	private double currentTemperature;
 	private double anticipator;
 
-	public H1TemperatureControl(double targetTemperature, double currentTemperature, double anticipator, long runtime) {
-		this.targetTemperature = targetTemperature;
+    public SingleStageHvacHandler(double targetTemperature, double currentTemperature, double anticipator, long runtime) {
+        this.targetTemperature = targetTemperature;
 		this.currentTemperature = currentTemperature;
 		this.runtime = runtime;
 		this.anticipator = anticipator;

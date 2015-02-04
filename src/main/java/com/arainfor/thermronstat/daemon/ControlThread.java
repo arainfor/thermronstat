@@ -8,7 +8,6 @@ import com.arainfor.thermronstat.logger.ControlLogger;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
-import com.arainfor.util.file.io.gpio.PiGPIO;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -24,12 +23,6 @@ import java.util.Properties;
  */
 public class ControlThread extends Thread {
 
-	// relays
-	protected static PiGPIO relayG;   // relay for Fan G
-	protected static PiGPIO relayY1;  // relay for Stage 1
-	protected static PiGPIO relayY2;  // relay for Stage 2
-	protected static PiGPIO relayW;   // relay for Emergency Heat
-	protected static PiGPIO relayO;   // relay for Reversing valve
 	// value files used for user control and feedback
 	protected static ValueFileIO statusControlValue; // This file enables/disables the entire system
 	protected static ValueFileIO userY1value;        // user feedback file for Y1 relay
@@ -45,9 +38,9 @@ public class ControlThread extends Thread {
 	private static int APPLICATION_VERSION_MAJOR = 2;
 	private static int APPLICATION_VERSION_MINOR = 0;
 	private static int APPLICATION_VERSION_BUILD = 0;
-	// these map the GPIO to a RelayOutputs value
+    private static Logger logger;
+    // these map the GPIO to a RelayOutputs value
 	protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
-	private static Logger logger;
 	protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
 	private long currentRuntimeStart;
 
@@ -63,7 +56,11 @@ public class ControlThread extends Thread {
 			public void run() {
 				logger.info("Turning OFF HVAC...");
 				try {
-					relayY1.setValue(false);
+                    // loop thru all the relays and set values accordingly.
+                    for (RelayMap rm : relayMap) {
+                        rm.getPiGPIO().setValue(false);
+                    }
+
 					statusControlValue.write(0);
 					controlLogger.logSystemOnOff(false);
 				} catch (IOException e) {
@@ -191,9 +188,11 @@ public class ControlThread extends Thread {
 
 				if (!systemStatus) {
 					if (stage1RelayPosition) { // turn off the relay if user wants it off!
-						// TODO: call new method to turn off all outputs
-						relayY1.setValue(false);
-						logSingle("Stage1 OFF");
+                        // loop thru all the relays and set values accordingly.
+                        for (RelayMap rm : relayMap) {
+                            rm.getPiGPIO().setValue(false);
+                        }
+                        logSingle("Stage1 OFF");
 					}
 					continue;
 				}
@@ -219,14 +218,14 @@ public class ControlThread extends Thread {
 			}
 
 			// the real decision is here!
-			H1TemperatureControl controller = new H1TemperatureControl(
-					targetTemp,
+            SingleStageHvacHandler handler = new SingleStageHvacHandler(
+                    targetTemp,
 					indoorTemp,
 					0.5,
 					currentRuntimeStart);
 
-			ArrayList<RelayDef> relaysEnabled = controller.execute();
-			boolean stage1Enable = relaysEnabled.contains(RelayDef.Y1);
+            ArrayList<RelayDef> relaysEnabled = handler.execute();
+            boolean stage1Enable = relaysEnabled.contains(RelayDef.Y1);
 			if (stage1Enable) {
 				if (currentRuntimeStart == 0)
 					currentRuntimeStart = System.currentTimeMillis();
@@ -254,8 +253,8 @@ public class ControlThread extends Thread {
 
 				if (stage1RelayPosition != stage1Enable) {
 					logger.debug("***************");
-					logger.debug("heat mode? " + controller.isHeat());
-					logger.debug("target_temp=" + targetTemp);
+                    logger.debug("heat mode? " + handler.isHeat());
+                    logger.debug("target_temp=" + targetTemp);
 					logger.debug("indoor_temp=" + indoorTemp);
 					logger.debug("outdoor_temp=" + outdoorTemp);
 					logger.info("Stage1 Relay changed from:" + stage1RelayPosition + " to:" + stage1Enable);
