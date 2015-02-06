@@ -12,10 +12,10 @@ public class ThermometersList {
     protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
 
     public ThermometersList() {
-        thermometers.add(new Thermometer(0, System.getProperty("0.name"), new DS18B20(System.getProperty("0.source"))));
-        thermometers.add(new Thermometer(1, System.getProperty("1.name"), new DS18B20(System.getProperty("1.source"))));
-        thermometers.add(new Thermometer(2, System.getProperty("2.name"), new DS18B20(System.getProperty("2.source"))));
-        thermometers.add(new Thermometer(3, System.getProperty("3.name"), new DS18B20(System.getProperty("3.source"))));
+        thermometers.add(new Thermometer(0, System.getProperty("i.name"), new DS18B20(System.getProperty("i.source")))); // indoor
+        thermometers.add(new Thermometer(1, System.getProperty("o.name"), new DS18B20(System.getProperty("o.source")))); // outdoor
+        thermometers.add(new Thermometer(2, System.getProperty("p.name"), new DS18B20(System.getProperty("p.source")))); // plenum
+        thermometers.add(new Thermometer(3, System.getProperty("r.name"), new DS18B20(System.getProperty("r.source")))); // return
     }
 
     public ArrayList<Thermometer> list() {

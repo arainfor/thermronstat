@@ -15,25 +15,17 @@ public class StatusRelaysList {
     protected static PiGPIO relayG;   // relay for Fan G
     protected static PiGPIO relayY1;  // relay for Stage 1
     protected static PiGPIO relayY2;  // relay for Stage 2
+    private static StatusRelaysList instance;
     // these map the GPIO to a RelayInputs value
     protected ArrayList<RelayMap> relaysList = new ArrayList<RelayMap>();
-
-    private static StatusRelaysList instance;
-
-    public synchronized static StatusRelaysList getInstance() {
-        if (instance == null) {
-            instance = new StatusRelaysList();
-        }
-        return instance;
-    }
 
     private StatusRelaysList() {
         // setup gpio
         try {
 
-            relayG = new PiGPIO(new Pin(27), Direction.IN);
-            relayY1 = new PiGPIO(new Pin(17), Direction.IN);
-            relayY2 = new PiGPIO(new Pin(22), Direction.IN);
+            relayG = new PiGPIO(new Pin(Integer.parseInt(System.getProperty("g.pin", "27"))), Direction.IN);
+            relayY1 = new PiGPIO(new Pin(Integer.parseInt(System.getProperty("y1.pin", "17"))), Direction.IN);
+            relayY2 = new PiGPIO(new Pin(Integer.parseInt(System.getProperty("y2.pin", "22"))), Direction.IN);
 
         } catch (IOException ioe) {
             System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());
@@ -45,6 +37,13 @@ public class StatusRelaysList {
         relaysList.add(new RelayMap(RelayDef.G, relayG, null));
         relaysList.add(new RelayMap(RelayDef.Y1, relayY1, null));
         relaysList.add(new RelayMap(RelayDef.Y2, relayY2, null));
+    }
+
+    public synchronized static StatusRelaysList getInstance() {
+        if (instance == null) {
+            instance = new StatusRelaysList();
+        }
+        return instance;
     }
 
     public ArrayList<RelayMap> list() {
