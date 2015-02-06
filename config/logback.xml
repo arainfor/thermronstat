@@ -9,10 +9,10 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/var/log/thermronstat.log</file>
+        <file>/var/log/thermostat/thermronstat.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>/var/log/thermronstat.%i.log.zip</fileNamePattern>
+            <fileNamePattern>/var/log/thermostat/thermronstat.%i.log.zip</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>3</maxIndex>
         </rollingPolicy>
@@ -53,12 +53,30 @@
         </encoder>
     </appender>
 
+    <appender name="TEMPERATURE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/var/log/thermostat/temperature.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/var/log/thermostat/temperature.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
     <logger name="com.arainfor.thermronstat.logger.ControlLogger">
         <appender-ref ref="CONTROL"/>
     </logger>
 
     <logger name="com.arainfor.thermronstat.logger.StatusLogger">
         <appender-ref ref="STATUS"/>
+    </logger>
+
+    <logger name="com.arainfor.thermronstat.logger.TemperatureLogger">
+        <appender-ref ref="TEMPERATURE"/>
     </logger>
 
     <root level="DEBUG">

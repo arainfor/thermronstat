@@ -33,30 +33,15 @@ public class HvacMonitor extends Thread {
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
-                if (statusLogger != null)
+                if (statusLogger != null) {
                     statusLogger.logMessage(APPLICATION_NAME + " shutdown!");
+                }
             }
         }));
 
         logger = new AppLogger().getLogger(this.getClass().getName());
         logger.info(this.getClass().getName() + " starting...");
 
-    }
-
-    @Override
-    public void run() {
-
-        statusLogger.logMessage(StatusThread.APPLICATION_NAME + " Startup...");
-
-        while (true) {
-            Map<RelayMap, Boolean> statusRelayCache = StatusRelayCache.getInstance().getCache();
-            statusLogger.logRelays(statusRelayCache);
-            try {
-                sleep(sleep);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
@@ -117,6 +102,22 @@ public class HvacMonitor extends Thread {
 
         new HvacMonitor().start();
 
+    }
+
+    @Override
+    public void run() {
+
+        statusLogger.logMessage(StatusThread.APPLICATION_NAME + " Startup...");
+
+        while (true) {
+            Map<RelayMap, Boolean> statusRelayCache = StatusRelayCache.getInstance().getCache();
+            statusLogger.logRelays(statusRelayCache);
+            try {
+                sleep(sleep);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

@@ -17,5 +17,9 @@ public class FileLogger {
         sb.append(formatter.format(new Date()));
     }
 
+    public void logMessage(StringBuffer sb, String message) {
+        logHeader(sb);
+        sb.append(message);
+    }
 
 }

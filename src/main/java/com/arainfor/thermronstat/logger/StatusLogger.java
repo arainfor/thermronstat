@@ -85,8 +85,7 @@ public class StatusLogger extends FileLogger {
 
     public void logMessage(String message) {
         StringBuffer sb = new StringBuffer();
-        logHeader(sb);
-        sb.append(message);
+        super.logMessage(sb, message);
         logger.info(sb.toString());
     }
 }

@@ -4,11 +4,16 @@ import com.arainfor.thermronstat.Temperature;
 import com.arainfor.thermronstat.TemperaturesList;
 import com.arainfor.thermronstat.Thermometer;
 import com.arainfor.thermronstat.ThermometersList;
+import com.arainfor.thermronstat.logger.TemperatureLogger;
+import com.arainfor.util.file.PropertiesLoader;
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * This class reads the thermometers in a thread and saves the values in a TemperaturesList object.
@@ -17,6 +22,9 @@ import java.util.ArrayList;
  */
 public class ThermometersThread extends Thread {
 
+    protected static int APPLICATION_VERSION_MAJOR = 1;
+    protected static int APPLICATION_VERSION_MINOR = 0;
+    protected static int APPLICATION_VERSION_BUILD = 0;
     private static String APPLICATION_NAME = "ThermometerMonitor";
     protected Logger logger = LoggerFactory.getLogger(ThermometersThread.class);
     protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1400"));
@@ -26,25 +34,101 @@ public class ThermometersThread extends Thread {
         logger.info(this.getClass().getName() + " starting...");
     }
 
+    /**
+     * @param args The Program Arguments
+     */
+    public static void main(String[] args) throws IOException {
+
+        Logger log = LoggerFactory.getLogger(ThermometersThread.class);
+
+        //System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
+        Options options = new Options();
+        options.addOption("help", false, "This message isn't very helpful");
+        options.addOption("version", false, "Print the version number");
+        options.addOption("monitor", false, "Start GUI Monitor");
+        options.addOption("config", true, "The configuration file");
+
+        CommandLineParser parser = new GnuParser();
+        CommandLine cmd;
+
+        try {
+            cmd = parser.parse(options, args);
+            if (cmd.hasOption("help")) {
+                HelpFormatter hf = new HelpFormatter();
+                hf.printHelp(APPLICATION_NAME, options);
+                return;
+            }
+            if (cmd.hasOption("version")) {
+                System.out.println("The " + APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        String propFileName = "thermostat.properties";
+        if (cmd.getOptionValue("config") != null)
+            propFileName = cmd.getOptionValue("config");
+
+        log.info("loading...{}", propFileName);
+
+        try {
+            Properties props = new PropertiesLoader(propFileName).getProps();
+
+            // Append the system properties with our application properties
+            props.putAll(System.getProperties());
+            System.setProperties(props);
+        } catch (FileNotFoundException fnfe) {
+        }
+
+
+        log.info("spawning task to read thermometers");
+        ThermometersThread thermometersThread = new ThermometersThread();
+        thermometersThread.start();
+
+    }
+
     @Override
     public void run() {
 
         ArrayList<Temperature> temperaturesList = TemperaturesList.getInstance().list();
         ArrayList<Thermometer> thermometersList = new ThermometersList().list();
 
+        ArrayList<Temperature> temperaturesListCache = new ArrayList<Temperature>();
+
+        TemperatureLogger temperatureLogger = new TemperatureLogger();
+
+        for (int i = 0; i < temperaturesList.size(); i++) {
+            temperaturesListCache.add(i, new Temperature(i, System.getProperty(i + ".name")));
+        }
+
         while (true) {
 
             for (Temperature temperature: temperaturesList) {
                 Thermometer thermometer = thermometersList.get(temperature.getIndex());
+
                 if (thermometer.getDs18B20().getFilename().contains("unknown")) {
-                    temperature.setValue((double)0);
+                    continue;
                 } else {
                     try {
-                        temperature.setValue(thermometer.getDs18B20().getTempF());
+                        Double tempF = thermometer.getDs18B20().getTempF();
+                        temperature.setValue(tempF);
                     } catch (IOException e) {
                         logger.warn("Error reading thermometer " + thermometer.getName() + " Exception:" + e.getMessage());
                     }
                 }
+            }
+
+            boolean bDirty = false;
+            for (int i = 0; i < temperaturesList.size(); i++) {
+                if (!temperaturesList.get(i).toString().equals(temperaturesListCache.get(i).toString())) {
+                    bDirty = true;
+                    temperaturesListCache.get(i).setValue(temperaturesList.get(i).getValue());
+                }
+            }
+
+            if (bDirty) {
+                temperatureLogger.logMessage(temperaturesList.toString());
             }
 
             try {
@@ -56,4 +140,5 @@ public class ThermometersThread extends Thread {
 
         }
     }
+
 }

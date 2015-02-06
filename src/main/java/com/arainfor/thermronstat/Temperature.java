@@ -9,11 +9,17 @@ public class Temperature {
 
     private final int index;
     private final String name;
-    private Double value = Double.MIN_VALUE;
+    private Double value = Double.POSITIVE_INFINITY;
 
     public Temperature(int index, String name) {
         this.index = index;
         this.name = name;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Temperature temp = new Temperature(0, "Alan");
+        System.out.println(temp);
+
     }
 
     public int getIndex() {
@@ -27,23 +33,22 @@ public class Temperature {
     public Double getValue() {
         return value;
     }
+
     public void setValue(Double value) {
         this.value = value;
     }
 
     public String toString() {
 
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(1);
+        NumberFormat df = NumberFormat.getInstance();
+        df.setMaximumFractionDigits(1);
+        df.setParseIntegerOnly(false);
+
 
         StringBuilder sb = new StringBuilder();
-        sb.append(name);
+        sb.append(getName());
         sb.append(": ");
-        String temperature = Integer.toString(Integer.MIN_VALUE);
 
-        temperature = nf.format(getValue());
-
-        return new String(name + ": " + temperature);
+        return new String(name + ": " + df.format(getValue()));
     }
-
 }
