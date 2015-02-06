@@ -88,7 +88,7 @@ public class StatusLogReader extends LogReader {
             if (slr.relays.get(RelayDef.Y1).booleanValue() && y1Start == null) {
                 y1Start = slr.date;
                 y1Stop = null;
-            } else if (!slr.relays.get(RelayDef.Y1).booleanValue() && y1Start != null) {
+            } else if (!slr.relays.get(RelayDef.Y1).booleanValue() && y1Start != null && y2Start != null) {
                 y1Stop = slr.getDate();
             }
 
@@ -105,7 +105,7 @@ public class StatusLogReader extends LogReader {
             if (slr.relays.get(RelayDef.Y2).booleanValue() && y2Start == null) {
                 y2Start = slr.date;
                 y2Stop = null;
-            } else if (!slr.relays.get(RelayDef.Y2).booleanValue() && y2Start != null) {
+            } else if (!slr.relays.get(RelayDef.Y2).booleanValue() && y1Start != null && y2Start != null) {
                 y2Stop = slr.getDate();
             }
 
