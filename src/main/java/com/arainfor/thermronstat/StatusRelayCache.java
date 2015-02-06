@@ -1,6 +1,5 @@
 package com.arainfor.thermronstat;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -9,13 +8,8 @@ import java.util.Map;
  */
 public class StatusRelayCache {
 
-    private static Map<RelayMap, Boolean> cache = new LinkedHashMap<RelayMap, Boolean>();
-
     static StatusRelayCache instance;
-
-    private StatusRelayCache() {
-        ArrayList<RelayMap> statusRelayList = StatusRelaysList.getInstance().list();
-    }
+    private static Map<RelayMap, Boolean> cache = new LinkedHashMap<RelayMap, Boolean>();
 
     public static synchronized StatusRelayCache getInstance() {
         if (instance == null) {

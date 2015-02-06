@@ -12,10 +12,10 @@ public class TemperaturesList {
     static TemperaturesList instance;
 
     private TemperaturesList() {
-        temperatures.add(new Temperature(0, System.getProperty("0.name")));
-        temperatures.add(new Temperature(1, System.getProperty("1.name")));
-        temperatures.add(new Temperature(2, System.getProperty("2.name")));
-        temperatures.add(new Temperature(3, System.getProperty("3.name")));
+        temperatures.add(new Temperature(0, System.getProperty("i.name"))); // indoor
+        temperatures.add(new Temperature(1, System.getProperty("o.name"))); // outdoor
+        temperatures.add(new Temperature(2, System.getProperty("p.name"))); // plenum
+        temperatures.add(new Temperature(3, System.getProperty("r.name"))); // return
     }
 
     public static synchronized TemperaturesList getInstance() {
