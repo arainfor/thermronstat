@@ -8,8 +8,8 @@ import java.util.Map;
  */
 public class StatusRelayCache {
 
-    static StatusRelayCache instance;
-    private static Map<RelayMap, Boolean> cache = new LinkedHashMap<RelayMap, Boolean>();
+    private static final Map<RelayMap, Boolean> cache = new LinkedHashMap<RelayMap, Boolean>();
+    private static StatusRelayCache instance;
 
     public static synchronized StatusRelayCache getInstance() {
         if (instance == null) {

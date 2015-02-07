@@ -1,6 +1,7 @@
 package com.arainfor.thermronstat.logger;
 
 import com.arainfor.thermronstat.RelayMap;
+import com.arainfor.thermronstat.StringConstants;
 import com.arainfor.thermronstat.Temperature;
 import com.arainfor.thermronstat.TemperaturesList;
 import com.arainfor.util.file.PropertiesLoader;
@@ -17,9 +18,9 @@ import java.util.*;
 public class StatusLogger extends FileLogger {
 
     private static final Logger logger = LoggerFactory.getLogger(StatusLogger.class);
-    String propFileName = "thermostat.properties";
+    private final String propFileName = "thermostat.properties";
+    private final List<String> eventList = Collections.synchronizedList(new ArrayList<String>());
     private HashMap<Integer, Boolean> relayMapLast = new HashMap<Integer, Boolean>();
-    private List<String> eventList = Collections.synchronizedList(new ArrayList());
 
     public StatusLogger() throws IOException {
         super();
@@ -41,7 +42,6 @@ public class StatusLogger extends FileLogger {
         ArrayList<Temperature> temperaturesList = TemperaturesList.getInstance().list();
 
         // Read the relays...
-        Set<Map.Entry<RelayMap, Boolean>> relays = statusRelayValue.entrySet();
         for (RelayMap relay  : statusRelayValue.keySet()) {
             int idx = relay.getRelayDef().ordinal();
             relayMapNow.put(idx, statusRelayValue.get(relay));
@@ -62,13 +62,13 @@ public class StatusLogger extends FileLogger {
 
             for (RelayMap relay  : statusRelayValue.keySet()) {
                 int idx = relay.getRelayDef().ordinal();
-                String entry = relay.getRelayDef() + ": " + relayMapNow.get(idx);
+                String entry = relay.getRelayDef() + StringConstants.KeyValueDelimiter + relayMapNow.get(idx);
                 sb.append(entry);
-                sb.append(FieldDelimiter);
+                sb.append(StringConstants.FieldDelimiter);
             }
 
             // add the string to our event list
-            eventList.add(sb.toString() + ", " + temperaturesList.get(0).toString() + ", " + temperaturesList.get(2).toString() + ", " + temperaturesList.get(3).toString());
+            eventList.add(sb.toString() + StringConstants.LineSeparator + temperaturesList.get(0).toString() + StringConstants.FieldDelimiter + temperaturesList.get(2).toString() + StringConstants.FieldDelimiter + temperaturesList.get(3).toString());
 
             if (shutdown) {
                 // the system just shutdown so record all the completed cycle's

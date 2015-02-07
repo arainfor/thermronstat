@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class ThermometersList {
 
-    protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
+    private static final ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
 
     public ThermometersList() {
         thermometers.add(new Thermometer(0, System.getProperty("i.name"), new DS18B20(System.getProperty("i.source")))); // indoor

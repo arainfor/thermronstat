@@ -19,13 +19,13 @@ import java.util.Properties;
  */
 public class HvacMonitor extends Thread {
 
-    protected static String APPLICATION_NAME = "HvacMonitor";
-    protected static int APPLICATION_VERSION_MAJOR = 1;
-    protected static int APPLICATION_VERSION_MINOR = 0;
-    protected static int APPLICATION_VERSION_BUILD = 0;
+    protected static final String APPLICATION_NAME = "HvacMonitor";
+    protected static final int APPLICATION_VERSION_MAJOR = 1;
+    protected static final int APPLICATION_VERSION_MINOR = 0;
+    protected static final int APPLICATION_VERSION_BUILD = 0;
     private static StatusLogger statusLogger;
-    protected Logger logger;
-    protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
+    protected final Logger logger;
+    protected final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
 
     public HvacMonitor() {
 
@@ -88,7 +88,9 @@ public class HvacMonitor extends Thread {
             // Append the system properties with our application properties
             props.putAll(System.getProperties());
             System.setProperties(props);
-        } catch (FileNotFoundException fnfe) {}
+        } catch (FileNotFoundException fnfe) {
+            log.warn("Cannot load file:", fnfe);
+        }
 
         statusLogger = new StatusLogger();
 

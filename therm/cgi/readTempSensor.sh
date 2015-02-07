@@ -22,5 +22,5 @@ echo "Temperature Farenheit: $far"
 
 # write the file
 echo "Output: $2"
-echo $far > $2
+echo ${far} > $2
 

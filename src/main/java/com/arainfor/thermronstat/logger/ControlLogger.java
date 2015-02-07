@@ -1,6 +1,7 @@
 package com.arainfor.thermronstat.logger;
 
 import com.arainfor.thermronstat.RelayDef;
+import com.arainfor.thermronstat.StringConstants;
 import com.arainfor.thermronstat.Thermometer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ public class ControlLogger extends FileLogger {
 
     private static final Logger logger = LoggerFactory.getLogger(ControlLogger.class);
 
-    public ControlLogger() throws IOException {
+    public ControlLogger() {
         super();
     }
 
@@ -24,7 +25,7 @@ public class ControlLogger extends FileLogger {
     public void logSystemOnOff(boolean value) {
         StringBuffer sb = new StringBuffer();
         logHeader(sb);
-        String entry = "System: " + (value ? "ON" : "OFF") + LineSeparator;
+        String entry = "System" + StringConstants.KeyValueDelimiter + (value ? "ON" : "OFF") + StringConstants.LineSeparator;
         sb.append(entry);
 
         logger.info(sb.toString());
@@ -33,7 +34,7 @@ public class ControlLogger extends FileLogger {
     public void logRuntime(long runtime) {
         StringBuffer sb = new StringBuffer();
         logHeader(sb);
-        String entry = "runtime: " + runtime + LineSeparator;
+        String entry = "Runtime" + StringConstants.KeyValueDelimiter + runtime + StringConstants.LineSeparator;
         sb.append(entry);
 
         logger.info(sb.toString());
@@ -43,9 +44,10 @@ public class ControlLogger extends FileLogger {
 
         StringBuffer sb = new StringBuffer();
         logHeader(sb);
-        sb.append("summary: ");
+        sb.append("summary");
+        sb.append(StringConstants.KeyValueDelimiter);
         for (RelayDef relayDef : RelayDef.values()) {
-            String entry = relayDef + " " + relaysEnabled.contains(relayDef) + FieldDelimiter;
+            String entry = relayDef + " " + relaysEnabled.contains(relayDef) + StringConstants.FieldDelimiter;
             sb.append(entry);
         }
 
@@ -53,7 +55,7 @@ public class ControlLogger extends FileLogger {
         nf.setMaximumFractionDigits(1);
         for (Thermometer thermometer : thermometers) {
             try {
-                String entry = "Thermometer idx: " + thermometer.getIndex()
+                String entry = "Thermometer idx" + StringConstants.KeyValueDelimiter + thermometer.getIndex()
                         + " " + thermometer.getName()
                         + " " + nf.format(thermometer.getDs18B20().getTempF()) + " ";
                 sb.append(entry);
@@ -62,7 +64,7 @@ public class ControlLogger extends FileLogger {
             }
         }
 
-        sb.append(LineSeparator);
+        sb.append(StringConstants.LineSeparator);
         logger.info(sb.toString());
 
     }

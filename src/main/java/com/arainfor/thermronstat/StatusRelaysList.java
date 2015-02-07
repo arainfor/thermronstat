@@ -12,12 +12,12 @@ import java.util.ArrayList;
  */
 public class StatusRelaysList {
 
-    protected static PiGPIO relayG;   // relay for Fan G
-    protected static PiGPIO relayY1;  // relay for Stage 1
-    protected static PiGPIO relayY2;  // relay for Stage 2
+    private static PiGPIO relayG;   // relay for Fan G
+    private static PiGPIO relayY1;  // relay for Stage 1
+    private static PiGPIO relayY2;  // relay for Stage 2
     private static StatusRelaysList instance;
     // these map the GPIO to a RelayInputs value
-    protected ArrayList<RelayMap> relaysList = new ArrayList<RelayMap>();
+    private final ArrayList<RelayMap> relaysList = new ArrayList<RelayMap>();
 
     private StatusRelaysList() {
         // setup gpio

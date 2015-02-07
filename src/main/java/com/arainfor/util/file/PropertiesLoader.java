@@ -1,7 +1,6 @@
 package com.arainfor.util.file;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -11,15 +10,11 @@ import java.util.Properties;
  */
 public class PropertiesLoader {
 
-    Properties props = new Properties();
+    private final Properties props = new Properties();
 
     public PropertiesLoader(String pathFileName) throws IOException {
         InputStream inputStream = new FileInputStream(pathFileName);
-        if (inputStream != null) {
-            props.load(inputStream);
-        } else {
-            throw new FileNotFoundException("property file '" + pathFileName + "' not found in the classpath");
-        }
+        props.load(inputStream);
     }
 
     public Properties getProps() {

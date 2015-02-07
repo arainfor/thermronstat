@@ -23,28 +23,28 @@ import java.util.Properties;
  */
 public class ControlThread extends Thread {
 
-	// value files used for user control and feedback
-	protected static ValueFileIO statusControlValue; // This file enables/disables the entire system
-	protected static ValueFileIO userY1value;        // user feedback file for Y1 relay
-	protected static ValueFileIO userY2value;        // user feedback file for Y2 relay
-	protected static ValueFileIO userGvalue;         // user feedback file for G relay
-	protected static ValueFileIO userWvalue;         // user feedback file for W relay
-	protected static ValueFileIO userOvalue;         // user feedback file for O relay
-	protected static ValueFileIO userTargetTempValue;  // This file is the user target temperature
-	protected static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
-	static String oldSingleMsg;
-	private static ControlLogger controlLogger;
-	private static String APPLICATION_NAME = "ThermRonStat";
-	private static int APPLICATION_VERSION_MAJOR = 2;
-	private static int APPLICATION_VERSION_MINOR = 0;
-	private static int APPLICATION_VERSION_BUILD = 0;
+    private static final String APPLICATION_NAME = "ThermRonStat";
+    private static final int APPLICATION_VERSION_MAJOR = 2;
+    private static final int APPLICATION_VERSION_MINOR = 0;
+    private static final int APPLICATION_VERSION_BUILD = 0;
+    // value files used for user control and feedback
+    private static ValueFileIO statusControlValue; // This file enables/disables the entire system
+    private static ValueFileIO userY1value;        // user feedback file for Y1 relay
+    private static ValueFileIO userY2value;        // user feedback file for Y2 relay
+    private static ValueFileIO userGvalue;         // user feedback file for G relay
+    private static ValueFileIO userWvalue;         // user feedback file for W relay
+    private static ValueFileIO userOvalue;         // user feedback file for O relay
+    private static ValueFileIO userTargetTempValue;  // This file is the user target temperature
+    private static ArrayList<Thermometer> thermometers = new ArrayList<Thermometer>();
+    private static String oldSingleMsg;
+    private static ControlLogger controlLogger;
     private static Logger logger;
     // these map the GPIO to a RelayOutputs value
-	protected ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
-	protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
-	private long currentRuntimeStart;
+    private final ArrayList<RelayMap> relayMap = new ArrayList<RelayMap>();
+    private final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
+    private long currentRuntimeStart;
 
-	public ControlThread() {
+    private ControlThread() {
 
 		super();
 
@@ -265,9 +265,8 @@ public class ControlThread extends Thread {
 			} catch (IOException e) {
 				logger.error("Relay Control Error: " + e.toString());
 				e.printStackTrace();
-				continue;
-			}
-		}
+            }
+        }
 	}
 
 	/**

@@ -19,9 +19,9 @@ public class PiGPIO {
     public static final String GPIO_OFF = "0";
     protected static final String IO_BASE_FS = System.getProperty("PiGPIO.IO_BASE_FS", "/sys/class/gpio/");
     private static final Logger logger = LoggerFactory.getLogger(PiGPIO.class);
-    static boolean foreignHardware = false;
-    protected FileWriter commandFile;
-    private Pin pin;
+    private static boolean foreignHardware = false;
+    private final Pin pin;
+    private FileWriter commandFile;
     private Direction direction;
 
     public PiGPIO (Pin pin, Direction direction) throws IOException {
@@ -157,9 +157,7 @@ public class PiGPIO {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("GPIO Pin: " + getPin() + " Direction: " + getDirection());
-        return sb.toString();
+        return "GPIO Pin: " + getPin() + " Direction: " + getDirection();
     }
 
 }

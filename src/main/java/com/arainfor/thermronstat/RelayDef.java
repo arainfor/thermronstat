@@ -11,7 +11,7 @@ public enum RelayDef {
     W("AuxHeat"),
     O("ReversingValve"),;
 
-    private String name;
+    private final String name;
 
     RelayDef(String name) {
         this.name = name;

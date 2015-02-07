@@ -2,13 +2,10 @@ package com.arainfor.thermronstat.logReader;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +14,7 @@ import java.util.List;
  */
 public class TempLogReader extends LogReader {
 
-    Logger logger = LoggerFactory.getLogger(TempLogReader.class);
-    List<TemperatureLogRecord> logRecords = new ArrayList<TemperatureLogRecord>();
+    private final List<TemperatureLogRecord> logRecords = new ArrayList<TemperatureLogRecord>();
 
     public TempLogReader(String logFileName) {
         super(logFileName);
@@ -51,17 +47,10 @@ public class TempLogReader extends LogReader {
             return;
         }
 
-        // This is just our local output format.
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-
         System.out.println("Parsing Log:" + cmd.getOptionValue("log"));
         TempLogReader lr = new TempLogReader(cmd.getOptionValue("log"));
         lr.read();
         System.out.println("Parsed " + lr.logRecords.size() + " records");
-
-        long totalRunTime = 0;
-        long shortestRun = Long.MAX_VALUE;
-        long longestRun = 0;
 
         for (TemperatureLogRecord tlr : lr.logRecords) {
 

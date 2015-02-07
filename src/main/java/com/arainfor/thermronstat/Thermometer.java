@@ -43,11 +43,6 @@ public class Thermometer {
             NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(1);
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(name);
-            sb.append(": ");
-
-
             try {
                 temperature = nf.format(ds18B20.getTempF());
             } catch (IOException e) {
@@ -55,10 +50,8 @@ public class Thermometer {
             }
         } catch (Exception e) {
             logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e.getMessage());
-        } finally {
-            return new String(name + ": " + temperature);
         }
-
+        return new String(name + StringConstants.KeyValueDelimiter + temperature);
     }
 
 }

@@ -14,9 +14,10 @@ import java.nio.charset.Charset;
  *
  */
 public class ValueFileIO {
-	Logger logger = new AppLogger().getLogger(this.getClass().getName());
-	String filename;
-	public ValueFileIO(String filename) {
+    private final Logger logger = new AppLogger().getLogger(this.getClass().getName());
+    private final String filename;
+
+    public ValueFileIO(String filename) {
 		this.filename = filename;
 	}
 	
@@ -42,14 +43,10 @@ public class ValueFileIO {
 
 		fis = new FileInputStream(filename);
 		br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
-		while ((line = br.readLine()) != null) {
-			br.close();
-			return Double.parseDouble(line);
-		}
-		br.close();
+        line = br.readLine();
+        br.close();
+        return Double.parseDouble(line);
 
-		logger.warn("Unable to readDouble from: {}", filename);
-		return -1;
 	}
 	
 	public String toString() {

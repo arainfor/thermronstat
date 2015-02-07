@@ -1,5 +1,6 @@
 package com.arainfor.thermronstat.logReader;
 
+import com.arainfor.thermronstat.StringConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +17,13 @@ import java.util.zip.ZipFile;
 /**
  * Created by arainfor on 2/5/15.
  */
-public abstract class LogReader {
+abstract class LogReader {
 
     private static final Logger logger = LoggerFactory.getLogger(LogReader.class);
     private BufferedReader br;
     private String dateString;
 
-    public LogReader(String logFileName) {
+    LogReader(String logFileName) {
         ZipFile zipFile = null;
         ZipEntry entry = null;
         if (logFileName.endsWith(".zip")) {
@@ -33,7 +34,7 @@ public abstract class LogReader {
                 e.printStackTrace();
             }
 
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            Enumeration<? extends ZipEntry> entries = zipFile != null ? zipFile.entries() : null;
 
             while(entries.hasMoreElements()){
                 entry = entries.nextElement();
@@ -41,7 +42,7 @@ public abstract class LogReader {
         }
 
         Calendar currentDate = Calendar.getInstance(); //Get the current date
-        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd"); //format it as per your requirement
+        SimpleDateFormat formatter = new SimpleDateFormat(StringConstants.FmtDate); //format it as per your requirement
         dateString = formatter.format(currentDate.getTime());
         if (logFileName.contains(File.separator) && logFileName.endsWith(".zip")) {
             logFileName = logFileName.substring(logFileName.lastIndexOf(File.separator) + 1);
@@ -68,11 +69,11 @@ public abstract class LogReader {
 
     }
 
-    protected String getDate() {
+    String getDate() {
         return dateString;
     }
 
-    protected void read() throws IOException {
+    void read() throws IOException {
         String thisLine;
 
         while ((thisLine = br.readLine()) != null) {
@@ -87,7 +88,7 @@ public abstract class LogReader {
 
     protected abstract void parse(String dateString, String data) throws ParseException;
 
-    protected String fmtHhMmSs(long millis) {
+    String fmtHhMmSs(long millis) {
         return String.format("%02d:%02d:%02d",
                 TimeUnit.MILLISECONDS.toHours(millis),
                 TimeUnit.MILLISECONDS.toMinutes(millis) -

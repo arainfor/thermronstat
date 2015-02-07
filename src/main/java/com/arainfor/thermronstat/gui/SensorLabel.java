@@ -9,10 +9,10 @@ import java.io.IOException;
 
 public class SensorLabel extends JPanel implements ActionListener {
 
+    protected final DS18B20 _sensor;
     private final Timer timer = new Timer(1000, this);
     private final JLabel descriptionLabel = new JLabel();
     private final JLabel valueLabel = new JLabel();
-    protected DS18B20 _sensor;
 
     public SensorLabel(String description, DS18B20 sensor) {
         super(true);

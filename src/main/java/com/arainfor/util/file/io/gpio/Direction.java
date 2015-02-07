@@ -28,7 +28,7 @@ public enum Direction {
     public abstract String get();
 
     public String toString() {
-        return new String(get());
+        return get();
     }
 
 }

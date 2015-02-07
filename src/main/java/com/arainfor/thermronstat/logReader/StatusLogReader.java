@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class StatusLogReader extends LogReader {
 
-    List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
+    private final List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
     Logger logger = LoggerFactory.getLogger(StatusLogReader.class);
 
     public StatusLogReader(String logFileName) {
@@ -85,10 +85,10 @@ public class StatusLogReader extends LogReader {
                 periodStart = slr.date;
 
             // count stage1 cycles
-            if (slr.relays.get(RelayDef.Y1).booleanValue() && y1Start == null) {
+            if (slr.relays.get(RelayDef.Y1) && y1Start == null) {
                 y1Start = slr.date;
                 y1Stop = null;
-            } else if (!slr.relays.get(RelayDef.Y1).booleanValue() && y1Start != null && y2Start != null) {
+            } else if (!slr.relays.get(RelayDef.Y1) && y1Start != null && y2Start != null) {
                 y1Stop = slr.getDate();
             }
 
@@ -102,10 +102,10 @@ public class StatusLogReader extends LogReader {
             }
 
             // count stage2 cycles
-            if (slr.relays.get(RelayDef.Y2).booleanValue() && y2Start == null) {
+            if (slr.relays.get(RelayDef.Y2) && y2Start == null) {
                 y2Start = slr.date;
                 y2Stop = null;
-            } else if (!slr.relays.get(RelayDef.Y2).booleanValue() && y1Start != null && y2Start != null) {
+            } else if (!slr.relays.get(RelayDef.Y2) && y1Start != null && y2Start != null) {
                 y2Stop = slr.getDate();
             }
 
@@ -118,12 +118,12 @@ public class StatusLogReader extends LogReader {
                 y2Cycles++;
             }
 
-            if (slr.relays.get(RelayDef.G).booleanValue() && fanStart == null) {
+            if (slr.relays.get(RelayDef.G) && fanStart == null) {
                 fanStart = slr.date;
                 fanStop = null;
                 if (firstStart == null)
                     firstStart = slr.date;
-            } else if (!slr.relays.get(RelayDef.G).booleanValue() && fanStart != null) {
+            } else if (!slr.relays.get(RelayDef.G) && fanStart != null) {
                 fanStop = slr.date;
             }
 

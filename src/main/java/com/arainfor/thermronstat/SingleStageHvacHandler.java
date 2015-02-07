@@ -21,10 +21,10 @@ public class SingleStageHvacHandler {
 	private static final long MIN_RUNTIME = Long.parseLong(System.getProperty("MIN_RUNTIME", String.valueOf(1000 * 60 * 5)));
 	private static final long MAX_ANTICIPATOR_RUNTIME = Long.parseLong(System.getProperty("MAX_ANTICIPATOR_RUNTIME", String.valueOf(1000 * 60 * 15)));
 	protected final boolean HEAT_ONLY = true;
-	private long runtime;
-	private double targetTemperature;
-	private double currentTemperature;
-	private double anticipator;
+    private final long runtime;
+    private final double targetTemperature;
+    private final double currentTemperature;
+    private final double anticipator;
 
     public SingleStageHvacHandler(double targetTemperature, double currentTemperature, double anticipator, long runtime) {
         this.targetTemperature = targetTemperature;
@@ -35,20 +35,18 @@ public class SingleStageHvacHandler {
 
 	/**
 	 * Heat or cool mode.  Answers the question.
-	 * @return
-	 */
+     * @return Answers the question
+     */
 	public boolean isHeat() {
-		if (HEAT_ONLY)
-			return HEAT_ONLY;
+        return HEAT_ONLY && HEAT_ONLY;
 
-		return false;
-	}
+    }
 
 	/**
 	 * Returns the relays we should energize depending on mode.
 	 *
-	 * @return
-	 */
+     * @return Which releay to energize
+     */
 	public ArrayList<RelayDef> execute() {
 
 		double anticpatorValue = anticipator;

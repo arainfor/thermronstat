@@ -13,9 +13,9 @@ import java.nio.charset.Charset;
 public class DS18B20 {
 
 	// The 1wire DS18B20's are connected to GPIO4 pin.
-	String SYS_BUS_FS = "/sys/bus/w1/devices/";
+    private final String SYS_BUS_FS = "/sys/bus/w1/devices/";
 
-	String filename = null;
+    private String filename = null;
 
 	public DS18B20(String serialId) {
         this.filename = SYS_BUS_FS + serialId + "/w1_slave";

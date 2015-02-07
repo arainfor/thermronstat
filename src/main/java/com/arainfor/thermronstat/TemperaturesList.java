@@ -7,9 +7,9 @@ import java.util.ArrayList;
  */
 public class TemperaturesList {
 
-    protected static ArrayList<Temperature> temperatures = new ArrayList<Temperature>();
+    private static final ArrayList<Temperature> temperatures = new ArrayList<Temperature>();
 
-    static TemperaturesList instance;
+    private static TemperaturesList instance;
 
     private TemperaturesList() {
         temperatures.add(new Temperature(0, System.getProperty("i.name"))); // indoor

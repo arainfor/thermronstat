@@ -45,10 +45,6 @@ public class Temperature {
         df.setParseIntegerOnly(false);
 
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(getName());
-        sb.append(": ");
-
-        return new String(name + ": " + df.format(getValue()));
+        return name + StringConstants.KeyValueDelimiter + df.format(getValue());
     }
 }

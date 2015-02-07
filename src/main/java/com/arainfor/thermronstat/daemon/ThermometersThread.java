@@ -22,12 +22,12 @@ import java.util.Properties;
  */
 public class ThermometersThread extends Thread {
 
-    protected static int APPLICATION_VERSION_MAJOR = 1;
-    protected static int APPLICATION_VERSION_MINOR = 0;
-    protected static int APPLICATION_VERSION_BUILD = 0;
-    private static String APPLICATION_NAME = "ThermometerMonitor";
-    protected Logger logger = LoggerFactory.getLogger(ThermometersThread.class);
-    protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1400"));
+    protected static final int APPLICATION_VERSION_MAJOR = 1;
+    protected static final int APPLICATION_VERSION_MINOR = 0;
+    protected static final int APPLICATION_VERSION_BUILD = 0;
+    private static final String APPLICATION_NAME = "ThermometerMonitor";
+    private final Logger logger = LoggerFactory.getLogger(ThermometersThread.class);
+    private final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1400"));
 
     public ThermometersThread() {
         super();
@@ -79,6 +79,7 @@ public class ThermometersThread extends Thread {
             props.putAll(System.getProperties());
             System.setProperties(props);
         } catch (FileNotFoundException fnfe) {
+            log.warn("Cannot load file:", fnfe);
         }
 
 
@@ -109,9 +110,7 @@ public class ThermometersThread extends Thread {
                 for (Temperature temperature : temperaturesList) {
                     Thermometer thermometer = thermometersList.get(temperature.getIndex());
 
-                    if (thermometer.getDs18B20().getFilename().contains("unknown")) {
-                        continue;
-                    } else {
+                    if (!thermometer.getDs18B20().getFilename().contains("unknown")) {
                         try {
                             Double tempF = thermometer.getDs18B20().getTempF();
                             temperature.setValue(tempF);
@@ -137,7 +136,6 @@ public class ThermometersThread extends Thread {
                     Thread.sleep(sleep);
                 } catch (InterruptedException e) {
                     logger.error("Interupted Exception:", e);
-                    continue;
                 }
             } catch (Exception e) {
                 logger.error("Unhandled Exception:", e);

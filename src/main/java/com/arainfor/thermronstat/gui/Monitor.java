@@ -15,7 +15,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,24 +25,23 @@ import java.util.Properties;
  */
 public class Monitor {
 
+    private static final String APPLICATION_NAME = "ThermRonStat";
+    private static final int APPLICATION_VERSION_MAJOR = 1;
+    private static final int APPLICATION_VERSION_MINOR = 0;
+    private static final int APPLICATION_VERSION_BUILD = 5;
     // relays
     protected static PiGPIO stage1Relay;  // relay for Stage 1
     // value files
-    protected static ValueFileIO statusControl;
-    protected static ValueFileIO stage1Control;   // user control file for stage1Relay
-    protected static ValueFileIO targetControl;
+    private static ValueFileIO statusControl;
+    private static ValueFileIO stage1Control;   // user control file for stage1Relay
+    private static ValueFileIO targetControl;
     // Thermometers
-    protected static DS18B20 indoorSensor;
-    protected static DS18B20 outdoorSensor;
-    protected static DS18B20 plenumSensor;
-    protected static DS18B20 returnSensor;
+    private static DS18B20 indoorSensor;
+    private static DS18B20 outdoorSensor;
+    private static DS18B20 plenumSensor;
+    private static DS18B20 returnSensor;
 
-    private static String APPLICATION_NAME = "ThermRonStat";
-    private static int APPLICATION_VERSION_MAJOR = 1;
-    private static int APPLICATION_VERSION_MINOR = 0;
-    private static int APPLICATION_VERSION_BUILD = 5;
-
-    public Monitor() {
+    private Monitor() {
 
         JFrame guiFrame = new JFrame();
 
@@ -105,7 +103,7 @@ public class Monitor {
         JLabel targetL = new JLabel("Target Temperature:");
         final JComboBox targetCB = new JComboBox(targetTempOptions);
         try {
-            targetCB.setSelectedItem(new Integer((int) targetControl.readDouble()).toString());
+            targetCB.setSelectedItem(Integer.toString((int) targetControl.readDouble()));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -187,11 +185,7 @@ public class Monitor {
         InputStream inputStream = new FileInputStream(propFileName);
         Properties props = new Properties();
 
-        if (inputStream != null) {
-            props.load(inputStream);
-        } else {
-            throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
-        }
+        props.load(inputStream);
 
         // Append the system properties with our applicaton properties
         props.putAll(System.getProperties());

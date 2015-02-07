@@ -20,12 +20,12 @@ import java.util.Properties;
 public class StatusThread extends Thread {
 
     // relays
-    protected static String APPLICATION_NAME = "StatusMonitor";
-    protected static int APPLICATION_VERSION_MAJOR = 1;
-    protected static int APPLICATION_VERSION_MINOR = 0;
-    protected static int APPLICATION_VERSION_BUILD = 0;
-    protected Logger logger;
-    protected int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "300"));
+    protected static final String APPLICATION_NAME = "StatusMonitor";
+    protected static final int APPLICATION_VERSION_MAJOR = 1;
+    protected static final int APPLICATION_VERSION_MINOR = 0;
+    protected static final int APPLICATION_VERSION_BUILD = 0;
+    private final Logger logger;
+    private final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "300"));
 
     public StatusThread() {
 
@@ -80,7 +80,9 @@ public class StatusThread extends Thread {
             // Append the system properties with our application properties
             props.putAll(System.getProperties());
             System.setProperties(props);
-        } catch (FileNotFoundException fnfe) {}
+        } catch (FileNotFoundException fnfe) {
+            log.warn("Cannot load file:", fnfe);
+        }
 
         ThermometersThread thermometersThread = new ThermometersThread();
         thermometersThread.start();

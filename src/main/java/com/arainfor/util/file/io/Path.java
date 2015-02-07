@@ -11,22 +11,20 @@ import java.io.File;
  */
 public class Path extends File {
 
-	String pathName;
+    private String pathName;
 
 	/** 
 	 * Create a path if we can and it doesn't exist.
-	 * @param path
-	 */
+     * @param path  The path name
+     */
 	public Path(String path) {
 		super(path);
 		pathName = path;
 	}
 
 	public boolean build() {
-		if (exists() && isDirectory())
-			return true;
-		return mkdirs();
-	}
+        return exists() && isDirectory() || mkdirs();
+    }
 
 	@Override
 	public String toString() {
