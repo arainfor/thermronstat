@@ -110,12 +110,16 @@ public class HvacMonitor extends Thread {
         statusLogger.logMessage(StatusThread.APPLICATION_NAME + " Startup...");
 
         while (true) {
-            Map<RelayMap, Boolean> statusRelayCache = StatusRelayCache.getInstance().getCache();
-            statusLogger.logRelays(statusRelayCache);
             try {
-                sleep(sleep);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                Map<RelayMap, Boolean> statusRelayCache = StatusRelayCache.getInstance().getCache();
+                statusLogger.logRelays(statusRelayCache);
+                try {
+                    sleep(sleep);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                logger.error("Unhandled exception:", e);
             }
         }
     }
