@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
+
 /**
  *
  * @author atael
@@ -81,14 +82,15 @@ public class PiGPIO {
         if (foreignHardware)
             return;
 
-        FileWriter exportFile = new FileWriter(IO_BASE_FS + "export");
+        String exportFileName = IO_BASE_FS + "export";
+        FileWriter exportFile = new FileWriter(exportFileName);
 
         try {
             exportFile.write(pin.getName());
             exportFile.flush();
             exportFile.close();
         } catch (IOException e) {
-            logger.error("Cannot export {} at {}", pin, exportFile, e);
+            logger.error("Cannot export {} at {}", pin, exportFileName, e);
             throw e;
         }
     }
@@ -156,7 +158,7 @@ public class PiGPIO {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("GPIO " + getPin() + " " + getDirection());
+        sb.append("GPIO Pin: " + getPin() + " Direction: " + getDirection());
         return sb.toString();
     }
 

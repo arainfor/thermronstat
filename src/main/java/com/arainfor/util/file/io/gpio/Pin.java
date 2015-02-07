@@ -33,6 +33,6 @@ public class Pin {
 	}
 	
 	public String toString() {
-        return "Pin: " + getName();
+        return getName();
     }
 }
