@@ -104,40 +104,44 @@ public class ThermometersThread extends Thread {
 
         while (true) {
 
-            for (Temperature temperature: temperaturesList) {
-                Thermometer thermometer = thermometersList.get(temperature.getIndex());
+            try {
 
-                if (thermometer.getDs18B20().getFilename().contains("unknown")) {
-                    continue;
-                } else {
-                    try {
-                        Double tempF = thermometer.getDs18B20().getTempF();
-                        temperature.setValue(tempF);
-                    } catch (IOException e) {
-                        logger.warn("Error reading thermometer " + thermometer.getName() + " Exception:" + e.getMessage());
+                for (Temperature temperature : temperaturesList) {
+                    Thermometer thermometer = thermometersList.get(temperature.getIndex());
+
+                    if (thermometer.getDs18B20().getFilename().contains("unknown")) {
+                        continue;
+                    } else {
+                        try {
+                            Double tempF = thermometer.getDs18B20().getTempF();
+                            temperature.setValue(tempF);
+                        } catch (IOException e) {
+                            logger.warn("Error reading thermometer {} Exception:", thermometer.getName(), e.getMessage());
+                        }
                     }
                 }
-            }
 
-            boolean bDirty = false;
-            for (int i = 0; i < temperaturesList.size(); i++) {
-                if (!temperaturesList.get(i).toString().equals(temperaturesListCache.get(i).toString())) {
-                    bDirty = true;
-                    temperaturesListCache.get(i).setValue(temperaturesList.get(i).getValue());
+                boolean bDirty = false;
+                for (int i = 0; i < temperaturesList.size(); i++) {
+                    if (!temperaturesList.get(i).toString().equals(temperaturesListCache.get(i).toString())) {
+                        bDirty = true;
+                        temperaturesListCache.get(i).setValue(temperaturesList.get(i).getValue());
+                    }
                 }
-            }
 
-            if (bDirty) {
-                temperatureLogger.logMessage(temperaturesList.toString());
-            }
+                if (bDirty) {
+                    temperatureLogger.logMessage(temperaturesList.toString());
+                }
 
-            try {
-                Thread.sleep(sleep);
-            } catch (InterruptedException e) {
-                logger.error(e.toString());
-                continue;
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    logger.error("Interupted Exception:", e);
+                    continue;
+                }
+            } catch (Exception e) {
+                logger.error("Unhandled Exception:", e);
             }
-
         }
     }
 
