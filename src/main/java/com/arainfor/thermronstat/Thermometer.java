@@ -12,10 +12,10 @@ import java.text.NumberFormat;
  */
 public class Thermometer {
 
+    private static final Logger logger = LoggerFactory.getLogger(Thermometer.class);
     private final int index;
     private final String name;
     private final DS18B20 ds18B20;
-    private static final Logger logger = LoggerFactory.getLogger(Thermometer.class);
 
     public Thermometer(int index, String name, DS18B20 ds18B20) {
         this.index = index;
@@ -37,21 +37,28 @@ public class Thermometer {
 
     public String toString() {
 
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMaximumFractionDigits(1);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(name);
-        sb.append(": ");
         String temperature = Integer.toString(Integer.MIN_VALUE);
 
         try {
-            temperature = nf.format(ds18B20.getTempF());
-        } catch (IOException e) {
-            logger.warn("Error reading thermometer " + ds18B20.getFilename() + " Exception:" + e.getMessage());
+            NumberFormat nf = NumberFormat.getInstance();
+            nf.setMaximumFractionDigits(1);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(name);
+            sb.append(": ");
+
+
+            try {
+                temperature = nf.format(ds18B20.getTempF());
+            } catch (IOException e) {
+                logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e.getMessage());
+            }
+        } catch (Exception e) {
+            logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e.getMessage());
+        } finally {
+            return new String(name + ": " + temperature);
         }
 
-        return new String(name + ": " + temperature);
     }
 
 }

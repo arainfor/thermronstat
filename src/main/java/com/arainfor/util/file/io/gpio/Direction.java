@@ -24,7 +24,11 @@ public enum Direction {
 	public static Direction getValue(int value) {
 		return Direction.values()[value];
 	}
-	
-	public abstract String get(); 
-	
+
+    public abstract String get();
+
+    public String toString() {
+        return new String("Direction: " + get());
+    }
+
 }

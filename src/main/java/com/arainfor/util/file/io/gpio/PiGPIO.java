@@ -3,6 +3,9 @@
  */
 package com.arainfor.util.file.io.gpio;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 /**
@@ -14,9 +17,11 @@ public class PiGPIO {
     public static final String GPIO_ON = "1";
     public static final String GPIO_OFF = "0";
     protected static final String IO_BASE_FS = System.getProperty("PiGPIO.IO_BASE_FS", "/sys/class/gpio/");
+    private static final Logger logger = LoggerFactory.getLogger(PiGPIO.class);
     static boolean foreignHardware = false;
     protected FileWriter commandFile;
     private Pin pin;
+    private Direction direction;
 
     public PiGPIO (Pin pin, Direction direction) throws IOException {
 
@@ -78,12 +83,19 @@ public class PiGPIO {
 
         FileWriter exportFile = new FileWriter(IO_BASE_FS + "export");
 
-        exportFile.write(pin.getName());
-        exportFile.flush();
-        exportFile.close();
+        try {
+            exportFile.write(pin.getName());
+            exportFile.flush();
+            exportFile.close();
+        } catch (IOException e) {
+            logger.error("Cannot export {} at {}", pin, exportFile, e);
+            throw e;
+        }
     }
 
     public void setDirection(Pin pin, Direction direction) throws IOException {
+
+        this.direction = direction;
 
         if (foreignHardware)
             return;
@@ -136,6 +148,16 @@ public class PiGPIO {
 
     public Pin getPin() {
         return pin;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("GPIO " + getPin() + " " + getDirection());
+        return sb.toString();
     }
 
 }

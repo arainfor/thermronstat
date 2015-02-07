@@ -27,7 +27,6 @@ public class DS18B20 {
 
     public Double getTempF() throws IOException {
 		return CelToFar(readRaw());
-
 	}
 	
 	public Double getTempC() throws IOException {
