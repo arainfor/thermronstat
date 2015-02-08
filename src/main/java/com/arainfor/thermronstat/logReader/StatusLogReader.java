@@ -96,9 +96,20 @@ public class StatusLogReader extends LogReader {
             if (y1Start != null && y1Stop != null) {
                 y1Stop = slr.getDate();
                 y1Runtime += y1Stop.getTime() - y1Start.getTime();
+
+                // show the completed cycle
+                long diff = y1Stop.getTime() - y1Start.getTime();//as given
+                totalRunTime += diff;
+                if (diff < shortestRun)
+                    shortestRun = diff;
+                if (diff > longestRun)
+                    longestRun = diff;
+                System.out.println("Start: " + formatter.format(y1Start) + " Stop: " + formatter.format(y1Stop) + " Runtime: " + lr.fmtHhMmSs(diff));
+
                 y1Start = null;
                 y1Stop = null;
                 y1Cycles++;
+
             }
 
             // count stage2 cycles
@@ -129,17 +140,9 @@ public class StatusLogReader extends LogReader {
 
             // Both start and stop set so we are done
             if (fanStart != null && fanStop != null) {
-                long diff = fanStop.getTime() - fanStart.getTime();//as given
-
-                System.out.println("Start: " + formatter.format(fanStart) + " Stop: " + formatter.format(fanStop) + " Runtime: " + lr.fmtHhMmSs(diff));
                 fanStart = null;
                 fanStop = null;
                 fanCycles++;
-                totalRunTime += diff;
-                if (diff < shortestRun)
-                    shortestRun = diff;
-                if (diff > longestRun)
-                    longestRun = diff;
             }
 
             //System.out.println(slr.toString());
