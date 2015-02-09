@@ -20,7 +20,7 @@ import java.util.zip.ZipFile;
 abstract class LogReader {
 
     private static final Logger logger = LoggerFactory.getLogger(LogReader.class);
-    private BufferedReader br;
+    BufferedReader br;
     private String dateString;
 
     LogReader(String logFileName) {

@@ -2,10 +2,12 @@ package com.arainfor.thermronstat.logReader;
 
 import com.arainfor.thermronstat.RelayDef;
 import com.arainfor.thermronstat.StringConstants;
+import com.arainfor.thermronstat.Temperature;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,8 @@ import java.util.Map;
 public class StatusLogRecord {
 
     final HashMap<RelayDef, Boolean> relays = new HashMap<RelayDef, Boolean>();
+    ArrayList<Temperature> temperatures = new ArrayList<Temperature>();
+
     Date date;
 
     // 02:20:48.347 - G: false, Y1: false, Y2: false,
@@ -46,6 +50,45 @@ public class StatusLogRecord {
         idx = thisLine.indexOf(key);
         value = thisLine.substring(idx + key.length(), thisLine.indexOf(",", idx + key.length()));
         relays.put(RelayDef.Y2, value.equalsIgnoreCase(Boolean.TRUE.toString()));
+
+        // set idx to end of relays
+        idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
+
+        key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+        value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(",", idx + key.length()));
+        Temperature temperature = new Temperature(0, key);
+        try {
+            temperature.setValue(Double.parseDouble(value));
+
+        } catch (NumberFormatException nfe) {
+        }
+        temperatures.add(temperature);
+
+        idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
+        key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+        value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(StringConstants.FieldDelimiter, idx + key.length()));
+
+        temperature = new Temperature(2, key);
+        try {
+            temperature.setValue(Double.parseDouble(value));
+
+        } catch (NumberFormatException nfe) {
+        }
+        temperatures.add(temperature);
+
+        idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
+        key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+
+        value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length());  // last one no field
+
+        temperature = new Temperature(3, key);
+        try {
+            temperature.setValue(Double.parseDouble(value));
+
+        } catch (NumberFormatException nfe) {
+        }
+        temperatures.add(temperature);
+
     }
 
     /**
@@ -72,6 +115,10 @@ public class StatusLogRecord {
         sb.append("Date" + StringConstants.KeyValueDelimiter).append(date).append(" ");
         for (Map.Entry<RelayDef, Boolean> relay : relays.entrySet()) {
             sb.append(relay.getKey().getName()).append(StringConstants.KeyValueDelimiter).append(relay.getValue()).append(" ");
+        }
+
+        for (Temperature temp : temperatures) {
+            sb.append(temp).append(" ");
         }
         return sb.toString();
     }

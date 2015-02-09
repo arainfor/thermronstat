@@ -1,11 +1,13 @@
 package com.arainfor.thermronstat.logReader;
 
 import com.arainfor.thermronstat.RelayDef;
+import com.arainfor.util.file.PropertiesLoader;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -13,14 +15,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by ARAINFOR on 1/25/2015.
  */
 public class StatusLogReader extends LogReader {
 
+    static Logger logger = LoggerFactory.getLogger(StatusLogReader.class);
     private final List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
-    Logger logger = LoggerFactory.getLogger(StatusLogReader.class);
 
     public StatusLogReader(String logFileName) {
         super(logFileName);
@@ -34,6 +37,7 @@ public class StatusLogReader extends LogReader {
         System.out.println("Starting...");
         Options options = new Options();
         options.addOption("log", true, "The log file");
+        options.addOption("config", true, "The configuration file");
         CommandLineParser parser = new GnuParser();
         CommandLine cmd;
         try {
@@ -51,6 +55,22 @@ public class StatusLogReader extends LogReader {
         } catch (org.apache.commons.cli.ParseException e) {
             e.printStackTrace();
             return;
+        }
+
+        String propFileName = "thermostat.properties";
+        if (cmd.getOptionValue("config") != null)
+            propFileName = cmd.getOptionValue("config");
+
+        logger.info("loading...{}", propFileName);
+
+        try {
+            Properties props = new PropertiesLoader(propFileName).getProps();
+
+            // Append the system properties with our application properties
+            props.putAll(System.getProperties());
+            System.setProperties(props);
+        } catch (FileNotFoundException fnfe) {
+            logger.warn("Cannot load file:", fnfe);
         }
 
         // This is just our local output format.
@@ -79,45 +99,71 @@ public class StatusLogReader extends LogReader {
         int y1Cycles = 0;
         int y2Cycles = 0;
 
+        Double lowReturn = Double.POSITIVE_INFINITY;
+        Double highReturn = Double.POSITIVE_INFINITY;
+        Double lowPlenum = Double.POSITIVE_INFINITY;
+        Double highPlenum = Double.POSITIVE_INFINITY;
+        Double lowIndoor = Double.POSITIVE_INFINITY;
+        Double highIndoor = Double.POSITIVE_INFINITY;
+
         for (StatusLogRecord slr : lr.statusLogRecord) {
             periodEnd = slr.date;
             if (periodStart == null)
                 periodStart = slr.date;
 
+            // fan cycles
+            if (slr.relays.get(RelayDef.G) && fanStart == null) {
+                fanStart = slr.date;
+                fanStop = null;
+            } else if (!slr.relays.get(RelayDef.G) && fanStart != null) {
+                fanStop = slr.date;
+            }
+
             // count stage1 cycles
             if (slr.relays.get(RelayDef.Y1) && y1Start == null) {
                 y1Start = slr.date;
                 y1Stop = null;
-            } else if (!slr.relays.get(RelayDef.Y1) && y1Start != null && y2Start != null) {
+                if (firstStart == null)
+                    firstStart = slr.date;
+            } else if (!slr.relays.get(RelayDef.Y1) && y1Start != null) {
                 y1Stop = slr.getDate();
             }
 
-            // stage1 clycle complete
-            if (y1Start != null && y1Stop != null) {
-                y1Stop = slr.getDate();
-                y1Runtime += y1Stop.getTime() - y1Start.getTime();
-
-                // show the completed cycle
-                long diff = y1Stop.getTime() - y1Start.getTime();//as given
-                totalRunTime += diff;
-                if (diff < shortestRun)
-                    shortestRun = diff;
-                if (diff > longestRun)
-                    longestRun = diff;
-                System.out.println("Start: " + formatter.format(y1Start) + " Stop: " + formatter.format(y1Stop) + " Runtime: " + lr.fmtHhMmSs(diff));
-
-                y1Start = null;
-                y1Stop = null;
-                y1Cycles++;
-
-            }
 
             // count stage2 cycles
             if (slr.relays.get(RelayDef.Y2) && y2Start == null) {
                 y2Start = slr.date;
                 y2Stop = null;
-            } else if (!slr.relays.get(RelayDef.Y2) && y1Start != null && y2Start != null) {
+            } else if (!slr.relays.get(RelayDef.Y2) && y2Start != null) {
                 y2Stop = slr.getDate();
+            }
+
+            if (y1Start != null) {
+                if (highIndoor == Double.POSITIVE_INFINITY || slr.temperatures.get(0).getValue() > highIndoor)
+                    highIndoor = slr.temperatures.get(0).getValue();
+
+                if (lowIndoor == Double.POSITIVE_INFINITY || slr.temperatures.get(0).getValue() < lowIndoor)
+                    lowIndoor = slr.temperatures.get(0).getValue();
+
+                if (highPlenum == Double.POSITIVE_INFINITY || slr.temperatures.get(1).getValue() > highPlenum)
+                    highPlenum = slr.temperatures.get(1).getValue();
+
+                if (lowPlenum == Double.POSITIVE_INFINITY || slr.temperatures.get(1).getValue() < lowPlenum)
+                    lowPlenum = slr.temperatures.get(1).getValue();
+
+                if (highReturn == Double.POSITIVE_INFINITY || slr.temperatures.get(2).getValue() > highReturn)
+                    highReturn = slr.temperatures.get(2).getValue();
+
+                if (lowReturn == Double.POSITIVE_INFINITY || slr.temperatures.get(2).getValue() < lowReturn)
+                    lowReturn = slr.temperatures.get(2).getValue();
+
+            }
+
+            // fan cylcle complete
+            if (fanStart != null && fanStop != null) {
+                fanStart = null;
+                fanStop = null;
+                fanCycles++;
             }
 
             // stage2 clycle complete
@@ -129,20 +175,28 @@ public class StatusLogReader extends LogReader {
                 y2Cycles++;
             }
 
-            if (slr.relays.get(RelayDef.G) && fanStart == null) {
-                fanStart = slr.date;
-                fanStop = null;
-                if (firstStart == null)
-                    firstStart = slr.date;
-            } else if (!slr.relays.get(RelayDef.G) && fanStart != null) {
-                fanStop = slr.date;
-            }
+            // stage1 cycle complete
+            if (y1Start != null && y1Stop != null) {
+                y1Stop = slr.getDate();
+                y1Runtime += y1Stop.getTime() - y1Start.getTime();
 
-            // Both start and stop set so we are done
-            if (fanStart != null && fanStop != null) {
-                fanStart = null;
-                fanStop = null;
-                fanCycles++;
+                // show the completed cycle
+                long diff = y1Stop.getTime() - y1Start.getTime();//as given
+                totalRunTime += diff;
+                if (diff < shortestRun)
+                    shortestRun = diff;
+                if (diff > longestRun)
+                    longestRun = diff;
+
+                System.out.println("Start: " + formatter.format(y1Start) + " Stop: " + formatter.format(y1Stop) + " Runtime: " + lr.fmtHhMmSs(diff));
+                System.out.println("Temp Hi/Low:" + highIndoor + "/" + lowIndoor + " Return: " + highReturn + "/" + lowReturn + " Plenum: " + highPlenum + "/" + lowPlenum);
+                System.out.println();
+                highIndoor = lowIndoor = highPlenum = lowPlenum = highReturn = lowReturn = Double.POSITIVE_INFINITY;
+
+                y1Start = null;
+                y1Stop = null;
+                y1Cycles++;
+
             }
 
             //System.out.println(slr.toString());
@@ -163,8 +217,35 @@ public class StatusLogReader extends LogReader {
         System.out.println(msg);
 
         System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun));
-        System.out.println("Cycles: " + fanCycles + " Average:" + lr.fmtHhMmSs(average) + " DutyCycle:" + defaultFormat.format(dutyCycle));
-        System.out.println("Heat: " + y1Cycles + " Runtime:" + lr.fmtHhMmSs(y1Runtime) + " Aux: " + y2Cycles + " Runtime:" + lr.fmtHhMmSs(y2Runtime));
+        System.out.println("Fan Cycles: " + fanCycles);
+        System.out.println("Heat: " + y1Cycles + " Average:" + lr.fmtHhMmSs(average) + " DutyCycle:" + defaultFormat.format(dutyCycle) + " Runtime:" + lr.fmtHhMmSs(y1Runtime));
+        System.out.println("Aux: " + y2Cycles + " Runtime:" + lr.fmtHhMmSs(y2Runtime));
+
+    }
+
+    /**
+     * This implementation reads 2 lines for one message.
+     *
+     * @throws IOException
+     */
+    @Override
+    void read() throws IOException {
+        String thisLine;
+        String twoLines = new String();
+
+        while ((thisLine = br.readLine()) != null) {
+            if (!twoLines.isEmpty()) {
+                try {
+                    twoLines = twoLines.concat(thisLine);
+                    parse(getDate(), twoLines);
+                } catch (Exception e) {
+                    logger.warn("Error {} Cannot decode record:{}", e.getMessage(), thisLine);
+                }
+                twoLines = new String();
+            } else {
+                twoLines = twoLines.concat(thisLine);
+            }
+        }
 
     }
 
