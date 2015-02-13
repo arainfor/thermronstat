@@ -100,19 +100,23 @@ public class StatusThread extends Thread {
         StatusRelayCache statusRelayCache = StatusRelayCache.getInstance();
 
         while (true) {
-            for (RelayMap relay : relaysList) {
-                try {
-                    statusRelayCache.setValue(relay, relay.getPiGPIO().getValue());
-                } catch (IOException e) {
-                    logger.error("Error reading relay:", e);
-                    e.printStackTrace();
-                }
-            }
-
             try {
-                sleep(sleep);
-            } catch (InterruptedException e) {
-                logger.error("Thread interrupted!:", e);
+                for (RelayMap relay : relaysList) {
+                    try {
+                        statusRelayCache.setValue(relay, relay.getPiGPIO().getValue());
+                    } catch (IOException e) {
+                        logger.error("Error reading relay:", e);
+                        e.printStackTrace();
+                    }
+                }
+
+                try {
+                    sleep(sleep);
+                } catch (InterruptedException e) {
+                    logger.error("Thread interrupted!:", e);
+                }
+            } catch (Exception e) {
+                logger.error("Unhandled exception:", e);
             }
         }
     }

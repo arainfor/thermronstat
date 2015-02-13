@@ -162,109 +162,113 @@ public class ControlThread extends Thread {
 
 		while (true) {
 
-			try {
-				Thread.sleep(sleep);
-			} catch (InterruptedException e) {
-				logger.error(e.toString());
-				continue;
-			}
+            try {
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    logger.error(e.toString());
+                    continue;
+                }
 
-			boolean stage1RelayPosition;
-			boolean systemStatus;
+                boolean stage1RelayPosition;
+                boolean systemStatus;
 
-			try {
-				systemStatus = statusControlValue.read();
-				stage1RelayPosition = userY1value.read();
+                try {
+                    systemStatus = statusControlValue.read();
+                    stage1RelayPosition = userY1value.read();
 
-				// Display a message if we toggled systemStatus.
-				if (systemStatus != lastSystemStatus) {
-					controlLogger.logSystemOnOff(systemStatus);
-					if (!systemStatus)
-						logger.info("Turning System OFF");
-					else
-						logger.info("Turning System ON");
-					lastSystemStatus = systemStatus;
-				}
+                    // Display a message if we toggled systemStatus.
+                    if (systemStatus != lastSystemStatus) {
+                        controlLogger.logSystemOnOff(systemStatus);
+                        if (!systemStatus)
+                            logger.info("Turning System OFF");
+                        else
+                            logger.info("Turning System ON");
+                        lastSystemStatus = systemStatus;
+                    }
 
-				if (!systemStatus) {
-					if (stage1RelayPosition) { // turn off the relay if user wants it off!
-                        // loop thru all the relays and set values accordingly.
-                        for (RelayMap rm : relayMap) {
+                    if (!systemStatus) {
+                        if (stage1RelayPosition) { // turn off the relay if user wants it off!
+                            // loop thru all the relays and set values accordingly.
+                            for (RelayMap rm : relayMap) {
+                                rm.getPiGPIO().setValue(false);
+                            }
+                            logSingle("Stage1 OFF");
+                        }
+                        continue;
+                    }
+
+                } catch (IOException e2) {
+                    logger.error("Error reading file: " + e2);
+                    e2.printStackTrace();
+                    continue;
+                }
+
+                double targetTemp;
+                double indoorTemp;
+                double outdoorTemp;
+
+                try {
+                    targetTemp = userTargetTempValue.readDouble();
+                    indoorTemp = thermometers.get(0).getDs18B20().getTempF();
+                    outdoorTemp = thermometers.get(1).getDs18B20().getTempF();
+                } catch (IOException ioe) {
+                    logger.error("Target Temperature Read error!: " + ioe.toString());
+                    ioe.printStackTrace();
+                    continue;
+                }
+
+                // the real decision is here!
+                SingleStageHvacHandler handler = new SingleStageHvacHandler(
+                        targetTemp,
+                        indoorTemp,
+                        0.5,
+                        currentRuntimeStart);
+
+                ArrayList<RelayDef> relaysEnabled = handler.execute();
+                boolean stage1Enable = relaysEnabled.contains(RelayDef.Y1);
+                if (stage1Enable) {
+                    if (currentRuntimeStart == 0)
+                        currentRuntimeStart = System.currentTimeMillis();
+                } else {
+                    if (currentRuntimeStart > 0) {
+                        controlLogger.logRuntime(System.currentTimeMillis() - currentRuntimeStart);
+                        currentRuntimeStart = 0;
+                    }
+                }
+
+                logSingle("Run?" + stage1Enable + " target:" + targetTemp + " indoorTemp:" + indoorTemp + " " + " stage1RelayPosition:" + stage1RelayPosition);
+
+                controlLogger.logSummary(relaysEnabled, thermometers);
+
+                try {
+                    // loop thru all the relays and set values accordingly.
+                    for (RelayMap rm : relayMap) {
+                        RelayDef rd = rm.getRelayDef();
+                        if (relaysEnabled.contains(rd)) {
+                            rm.getPiGPIO().setValue(true);
+                        } else {
                             rm.getPiGPIO().setValue(false);
                         }
-                        logSingle("Stage1 OFF");
-					}
-					continue;
-				}
+                    }
 
-			} catch (IOException e2) {
-				logger.error("Error reading file: " + e2);
-				e2.printStackTrace();
-				continue;
-			}
+                    if (stage1RelayPosition != stage1Enable) {
+                        logger.debug("***************");
+                        logger.debug("heat mode? " + handler.isHeat());
+                        logger.debug("target_temp=" + targetTemp);
+                        logger.debug("indoor_temp=" + indoorTemp);
+                        logger.debug("outdoor_temp=" + outdoorTemp);
+                        logger.info("Stage1 Relay changed from:" + stage1RelayPosition + " to:" + stage1Enable);
 
-			double targetTemp;
-			double indoorTemp;
-			double outdoorTemp;
-
-			try {
-				targetTemp = userTargetTempValue.readDouble();
-				indoorTemp = thermometers.get(0).getDs18B20().getTempF();
-				outdoorTemp = thermometers.get(1).getDs18B20().getTempF();
-			} catch (IOException ioe) {
-				logger.error("Target Temperature Read error!: " + ioe.toString());
-				ioe.printStackTrace();
-				continue;
-			}
-
-			// the real decision is here!
-            SingleStageHvacHandler handler = new SingleStageHvacHandler(
-                    targetTemp,
-					indoorTemp,
-					0.5,
-					currentRuntimeStart);
-
-            ArrayList<RelayDef> relaysEnabled = handler.execute();
-            boolean stage1Enable = relaysEnabled.contains(RelayDef.Y1);
-			if (stage1Enable) {
-				if (currentRuntimeStart == 0)
-					currentRuntimeStart = System.currentTimeMillis();
-			} else {
-				if (currentRuntimeStart > 0) {
-					controlLogger.logRuntime(System.currentTimeMillis() - currentRuntimeStart);
-					currentRuntimeStart = 0;
-				}
-			}
-
-			logSingle("Run?" + stage1Enable + " target:" + targetTemp + " indoorTemp:" + indoorTemp + " " + " stage1RelayPosition:" + stage1RelayPosition);
-
-			controlLogger.logSummary(relaysEnabled, thermometers);
-
-			try {
-				// loop thru all the relays and set values accordingly.
-				for (RelayMap rm : relayMap) {
-					RelayDef rd = rm.getRelayDef();
-					if (relaysEnabled.contains(rd)) {
-						rm.getPiGPIO().setValue(true);
-					} else {
-						rm.getPiGPIO().setValue(false);
-					}
-				}
-
-				if (stage1RelayPosition != stage1Enable) {
-					logger.debug("***************");
-                    logger.debug("heat mode? " + handler.isHeat());
-                    logger.debug("target_temp=" + targetTemp);
-					logger.debug("indoor_temp=" + indoorTemp);
-					logger.debug("outdoor_temp=" + outdoorTemp);
-					logger.info("Stage1 Relay changed from:" + stage1RelayPosition + " to:" + stage1Enable);
-
-					// Change to the new setting...
-					userY1value.write(stage1Enable);
-				}
-			} catch (IOException e) {
-				logger.error("Relay Control Error: " + e.toString());
-				e.printStackTrace();
+                        // Change to the new setting...
+                        userY1value.write(stage1Enable);
+                    }
+                } catch (IOException e) {
+                    logger.error("Relay Control Error: " + e.toString());
+                    e.printStackTrace();
+                }
+            } catch (Exception e) {
+                logger.error("Unhandled exception:", e);
             }
         }
 	}
