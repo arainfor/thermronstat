@@ -21,7 +21,7 @@ public class HvacMonitor extends Thread {
 
     protected static final String APPLICATION_NAME = "HvacMonitor";
     protected static final int APPLICATION_VERSION_MAJOR = 1;
-    protected static final int APPLICATION_VERSION_MINOR = 0;
+    protected static final int APPLICATION_VERSION_MINOR = 1;
     protected static final int APPLICATION_VERSION_BUILD = 0;
     private static StatusLogger statusLogger;
     protected final Logger logger;
@@ -51,7 +51,7 @@ public class HvacMonitor extends Thread {
 
         Logger log = LoggerFactory.getLogger(HvacMonitor.class);
 
-        //System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
+        //System.err.println(APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
         Options options = new Options();
         options.addOption("help", false, "This message isn't very helpful");
         options.addOption("version", false, "Print the version number");

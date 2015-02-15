@@ -22,7 +22,7 @@ public class StatusThread extends Thread {
     // relays
     protected static final String APPLICATION_NAME = "StatusMonitor";
     protected static final int APPLICATION_VERSION_MAJOR = 1;
-    protected static final int APPLICATION_VERSION_MINOR = 0;
+    protected static final int APPLICATION_VERSION_MINOR = 1;
     protected static final int APPLICATION_VERSION_BUILD = 0;
     private final Logger logger;
     private final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "300"));
@@ -43,7 +43,7 @@ public class StatusThread extends Thread {
 
         Logger log = LoggerFactory.getLogger(StatusThread.class);
 
-        //System.err.println("The " + APPLICATION_NAME +" v1" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
+        //System.err.println(APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
         Options options = new Options();
         options.addOption("help", false, "This message isn't very helpful");
         options.addOption("version", false, "Print the version number");

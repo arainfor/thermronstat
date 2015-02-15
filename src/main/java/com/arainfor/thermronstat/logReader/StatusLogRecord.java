@@ -54,41 +54,42 @@ public class StatusLogRecord {
         // set idx to end of relays
         idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
 
-        key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
-        value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(",", idx + key.length()));
-        Temperature temperature = new Temperature(0, key);
-        try {
-            temperature.setValue(Double.parseDouble(value));
+        if (thisLine.length() > idx) {
+            key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+            value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(",", idx + key.length()));
+            Temperature temperature = new Temperature(0, key);
+            try {
+                temperature.setValue(Double.parseDouble(value));
 
-        } catch (NumberFormatException nfe) {
+            } catch (NumberFormatException nfe) {
+            }
+            temperatures.add(temperature);
+
+            idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
+            key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+            value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(StringConstants.FieldDelimiter, idx + key.length()));
+
+            temperature = new Temperature(2, key);
+            try {
+                temperature.setValue(Double.parseDouble(value));
+
+            } catch (NumberFormatException nfe) {
+            }
+            temperatures.add(temperature);
+
+            idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
+            key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+
+            value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length());  // last one no field
+
+            temperature = new Temperature(3, key);
+            try {
+                temperature.setValue(Double.parseDouble(value));
+
+            } catch (NumberFormatException nfe) {
+            }
+            temperatures.add(temperature);
         }
-        temperatures.add(temperature);
-
-        idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
-        key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
-        value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(StringConstants.FieldDelimiter, idx + key.length()));
-
-        temperature = new Temperature(2, key);
-        try {
-            temperature.setValue(Double.parseDouble(value));
-
-        } catch (NumberFormatException nfe) {
-        }
-        temperatures.add(temperature);
-
-        idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
-        key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
-
-        value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length());  // last one no field
-
-        temperature = new Temperature(3, key);
-        try {
-            temperature.setValue(Double.parseDouble(value));
-
-        } catch (NumberFormatException nfe) {
-        }
-        temperatures.add(temperature);
-
     }
 
     /**
@@ -98,7 +99,7 @@ public class StatusLogRecord {
 
         StatusLogRecord slr = null;
         try {
-            slr = new StatusLogRecord("2015-01-25", "02:20:48.347 - G: false, Y1: false, Y2: false,");
+            slr = new StatusLogRecord("2015-01-25", "2015-02-14 10:30:13.670 - G: true, Y1: true, Y2: false, indoor: 68.4, plenum: 79.2, return: 63.6");
         } catch (ParseException e) {
             e.printStackTrace();
         }

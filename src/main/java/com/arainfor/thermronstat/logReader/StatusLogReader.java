@@ -22,6 +22,11 @@ import java.util.Properties;
  */
 public class StatusLogReader extends LogReader {
 
+    protected static final String APPLICATION_NAME = "StatusLogReader";
+    protected static final int APPLICATION_VERSION_MAJOR = 1;
+    protected static final int APPLICATION_VERSION_MINOR = 1;
+    protected static final int APPLICATION_VERSION_BUILD = 0;
+
     static Logger logger = LoggerFactory.getLogger(StatusLogReader.class);
     private final List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
 
@@ -34,7 +39,7 @@ public class StatusLogReader extends LogReader {
      */
     public static void main(String[] args) throws IOException {
 
-        System.out.println("Starting...");
+        System.err.println(APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
         Options options = new Options();
         options.addOption("log", true, "The log file");
         options.addOption("config", true, "The configuration file");
@@ -80,6 +85,9 @@ public class StatusLogReader extends LogReader {
         StatusLogReader lr = new StatusLogReader(cmd.getOptionValue("log"));
         lr.read();
         System.out.println("Parsed " + lr.statusLogRecord.size() + " records");
+
+        if (lr.statusLogRecord.size() == 0)
+            return;
 
         Date fanStart = null;
         Date fanStop = null;
@@ -138,7 +146,7 @@ public class StatusLogReader extends LogReader {
                 y2Stop = slr.getDate();
             }
 
-            if (y1Start != null) {
+            if (y1Start != null && slr.temperatures.size() >= 3) {
                 if (highIndoor == Double.POSITIVE_INFINITY || slr.temperatures.get(0).getValue() > highIndoor)
                     highIndoor = slr.temperatures.get(0).getValue();
 
@@ -231,20 +239,24 @@ public class StatusLogReader extends LogReader {
     @Override
     void read() throws IOException {
         String thisLine;
-        String twoLines = new String();
 
+        boolean bDateFound = false;
         while ((thisLine = br.readLine()) != null) {
-            if (!twoLines.isEmpty()) {
-                try {
-                    twoLines = twoLines.concat(thisLine);
-                    parse(getDate(), twoLines);
-                } catch (Exception e) {
-                    logger.warn("Error {} Cannot decode record:{}", e.getMessage(), thisLine);
-                }
-                twoLines = new String();
-            } else {
-                twoLines = twoLines.concat(thisLine);
+            // read until we find a record that starts with the date!
+            if (!bDateFound) {
+                bDateFound = thisLine.startsWith("20");
             }
+
+            if (!bDateFound) {
+                continue;
+            }
+
+            try {
+                parse(getDate(), thisLine);
+            } catch (Exception e) {
+                logger.warn("Error {} Cannot decode record:{}", e.getMessage(), thisLine);
+            }
+            bDateFound = false;
         }
 
     }
