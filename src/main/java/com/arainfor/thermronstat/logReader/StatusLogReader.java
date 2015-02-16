@@ -1,6 +1,7 @@
 package com.arainfor.thermronstat.logReader;
 
 import com.arainfor.thermronstat.RelayDef;
+import com.arainfor.thermronstat.StringConstants;
 import com.arainfor.util.file.PropertiesLoader;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
@@ -19,13 +20,16 @@ import java.util.Properties;
 
 /**
  * Created by ARAINFOR on 1/25/2015.
+ *
+ * 16-feb-15 akr - Bump build version.  Modify text output.
+ *
  */
 public class StatusLogReader extends LogReader {
 
     protected static final String APPLICATION_NAME = "StatusLogReader";
     protected static final int APPLICATION_VERSION_MAJOR = 1;
     protected static final int APPLICATION_VERSION_MINOR = 1;
-    protected static final int APPLICATION_VERSION_BUILD = 0;
+    protected static final int APPLICATION_VERSION_BUILD = 1;
 
     static Logger logger = LoggerFactory.getLogger(StatusLogReader.class);
     private final List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
@@ -221,13 +225,15 @@ public class StatusLogReader extends LogReader {
         }
         NumberFormat defaultFormat = NumberFormat.getPercentInstance();
         defaultFormat.setMinimumFractionDigits(1);
-        String msg = StringUtils.center(" Summary for Log:" + cmd.getOptionValue("log") + " ", 80, '*');
+
+        String runDate = new SimpleDateFormat(StringConstants.FmtDate).format(periodEnd);
+        String msg = StringUtils.center(" Summary for Log:" + cmd.getOptionValue("log") + " ending: " + runDate + " ", 80, '*');
         System.out.println(msg);
 
-        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime:" + lr.fmtHhMmSs(totalRunTime) + " Long:" + lr.fmtHhMmSs(longestRun) + " Short:" + lr.fmtHhMmSs(shortestRun));
-        System.out.println("Fan Cycles: " + fanCycles);
-        System.out.println("Heat: " + y1Cycles + " Average:" + lr.fmtHhMmSs(average) + " DutyCycle:" + defaultFormat.format(dutyCycle) + " Runtime:" + lr.fmtHhMmSs(y1Runtime));
-        System.out.println("Aux: " + y2Cycles + " Runtime:" + lr.fmtHhMmSs(y2Runtime));
+        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime: " + lr.fmtHhMmSs(totalRunTime) + " Long: " + lr.fmtHhMmSs(longestRun) + " Short: " + lr.fmtHhMmSs(shortestRun));
+        System.out.println("Stage 1: " + y1Cycles + " Average: " + lr.fmtHhMmSs(average) + " DutyCycle: " + defaultFormat.format(dutyCycle) + " Runtime: " + lr.fmtHhMmSs(y1Runtime));
+        System.out.println("Stage 2: " + y2Cycles + " Runtime: " + lr.fmtHhMmSs(y2Runtime));
+        System.out.println("Recirculation Fan Cycles: " + fanCycles);
 
     }
 
