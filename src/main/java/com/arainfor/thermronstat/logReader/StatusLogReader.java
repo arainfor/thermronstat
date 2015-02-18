@@ -13,23 +13,21 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by ARAINFOR on 1/25/2015.
  *
  * 16-feb-15 akr - Bump build version.  Modify text output.
+ * 17-feb-15 akr - Bump minor version.  Add offset and defaults command line parameters.  Improved Stage 2 output.
  *
  */
 public class StatusLogReader extends LogReader {
 
     protected static final String APPLICATION_NAME = "StatusLogReader";
     protected static final int APPLICATION_VERSION_MAJOR = 1;
-    protected static final int APPLICATION_VERSION_MINOR = 1;
-    protected static final int APPLICATION_VERSION_BUILD = 1;
+    protected static final int APPLICATION_VERSION_MINOR = 2;
+    protected static final int APPLICATION_VERSION_BUILD = 0;
 
     static Logger logger = LoggerFactory.getLogger(StatusLogReader.class);
     private final List<StatusLogRecord> statusLogRecord = new ArrayList<StatusLogRecord>();
@@ -43,10 +41,14 @@ public class StatusLogReader extends LogReader {
      */
     public static void main(String[] args) throws IOException {
 
+        String logFile = null;
+        String logOffset = null;
         System.err.println(APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
         Options options = new Options();
-        options.addOption("log", true, "The log file");
-        options.addOption("config", true, "The configuration file");
+        options.addOption("log", true, "The log file.");
+        options.addOption("config", true, "The configuration file.");
+        options.addOption("offset", true, "The offset from log date.");
+        options.addOption("defaults", false, "Use defaults for options not provided.");
         CommandLineParser parser = new GnuParser();
         CommandLine cmd;
         try {
@@ -56,19 +58,22 @@ public class StatusLogReader extends LogReader {
                 hf.printHelp(StatusLogReader.class.getSimpleName(), options);
                 return;
             }
-            if (!cmd.hasOption("log")) {
-                HelpFormatter hf = new HelpFormatter();
-                hf.printHelp(StatusLogReader.class.getSimpleName(), options);
-                return;
+            if (cmd.hasOption("log")) {
+                logFile = cmd.getOptionValue("log");
             }
+            if (cmd.hasOption("offset")) {
+                logOffset = cmd.getOptionValue("offset");
+            }
+
         } catch (org.apache.commons.cli.ParseException e) {
             e.printStackTrace();
             return;
         }
 
         String propFileName = "thermostat.properties";
-        if (cmd.getOptionValue("config") != null)
+        if (cmd.getOptionValue("config") != null) {
             propFileName = cmd.getOptionValue("config");
+        }
 
         logger.info("loading...{}", propFileName);
 
@@ -85,8 +90,20 @@ public class StatusLogReader extends LogReader {
         // This is just our local output format.
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
 
-        System.out.println("Parsing Log:" + cmd.getOptionValue("log"));
-        StatusLogReader lr = new StatusLogReader(cmd.getOptionValue("log"));
+        if (logOffset != null) {
+            int idx = Integer.parseInt(logOffset);
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DATE, -idx);
+            SimpleDateFormat sdf = new SimpleDateFormat(StringConstants.FmtDate);
+            logFile = System.getenv("LOGPATH") + "/status." + sdf.format(cal.getTime()) + ".log.zip";
+        }
+        if (logFile == null) {
+            logFile = System.getenv("LOGPATH") + "/status.log";
+        }
+
+
+        System.out.println("Parsing Log:" + logFile);
+        StatusLogReader lr = new StatusLogReader(logFile);
         lr.read();
         System.out.println("Parsed " + lr.statusLogRecord.size() + " records");
 
@@ -102,7 +119,8 @@ public class StatusLogReader extends LogReader {
         Date firstStart = null;
         Date periodStart = null;
         Date periodEnd = null;
-        long totalRunTime = 0;
+        long y1TotalRunTime = 0;
+        long y2TotalRunTime = 0;
         long shortestRun = Long.MAX_VALUE;
         long longestRun = 0;
         long y1Runtime = 0;
@@ -182,6 +200,8 @@ public class StatusLogReader extends LogReader {
             if (y2Start != null && y2Stop != null) {
                 y2Stop = slr.getDate();
                 y2Runtime += y2Stop.getTime() - y2Start.getTime();
+                long diff = y2Stop.getTime() - y2Start.getTime();//as given
+                y2TotalRunTime += diff;
                 y2Start = null;
                 y2Stop = null;
                 y2Cycles++;
@@ -194,7 +214,7 @@ public class StatusLogReader extends LogReader {
 
                 // show the completed cycle
                 long diff = y1Stop.getTime() - y1Start.getTime();//as given
-                totalRunTime += diff;
+                y1TotalRunTime += diff;
                 if (diff < shortestRun)
                     shortestRun = diff;
                 if (diff > longestRun)
@@ -214,14 +234,21 @@ public class StatusLogReader extends LogReader {
             //System.out.println(slr.toString());
         }
 
-        long average = 0;
-        if (fanCycles > 0) {
-            average = totalRunTime / fanCycles;
+        long y1Average = 0;
+        if (y1Cycles > 0) {
+            y1Average = y1TotalRunTime / y1Cycles;
+        }
+
+        long y2Average = 0;
+        if (y2Cycles > 0) {
+            y2Average = y2TotalRunTime / y2Cycles;
         }
         long totalPeriod = periodEnd.getTime() - periodStart.getTime();
-        double dutyCycle = 0;
+        double y1DutyCycle = 0;
+        double y2DutyCycle = 0;
         if (totalPeriod > 0) {
-            dutyCycle = (double) totalRunTime / (double) totalPeriod;
+            y1DutyCycle = (double) y1TotalRunTime / (double) totalPeriod;
+            y2DutyCycle = (double) y2TotalRunTime / (double) totalPeriod;
         }
         NumberFormat defaultFormat = NumberFormat.getPercentInstance();
         defaultFormat.setMinimumFractionDigits(1);
@@ -230,9 +257,9 @@ public class StatusLogReader extends LogReader {
         String msg = StringUtils.center(" Summary for Log:" + cmd.getOptionValue("log") + " ending: " + runDate + " ", 80, '*');
         System.out.println(msg);
 
-        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime: " + lr.fmtHhMmSs(totalRunTime) + " Long: " + lr.fmtHhMmSs(longestRun) + " Short: " + lr.fmtHhMmSs(shortestRun));
-        System.out.println("Stage 1: " + y1Cycles + " Average: " + lr.fmtHhMmSs(average) + " DutyCycle: " + defaultFormat.format(dutyCycle) + " Runtime: " + lr.fmtHhMmSs(y1Runtime));
-        System.out.println("Stage 2: " + y2Cycles + " Runtime: " + lr.fmtHhMmSs(y2Runtime));
+        System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime: " + lr.fmtHhMmSs(y1TotalRunTime) + " Long: " + lr.fmtHhMmSs(longestRun) + " Short: " + lr.fmtHhMmSs(shortestRun));
+        System.out.println("Stage 1: " + y1Cycles + " Average: " + lr.fmtHhMmSs(y1Average) + " DutyCycle: " + defaultFormat.format(y1DutyCycle) + " Runtime: " + lr.fmtHhMmSs(y1Runtime));
+        System.out.println("Stage 2: " + y2Cycles + " Average: " + lr.fmtHhMmSs(y2Average) + " DutyCycle: " + defaultFormat.format(y2DutyCycle) + " Runtime: " + lr.fmtHhMmSs(y2Runtime));
         System.out.println("Recirculation Fan Cycles: " + fanCycles);
 
     }
