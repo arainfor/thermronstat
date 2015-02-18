@@ -4,6 +4,9 @@ import java.text.NumberFormat;
 
 /**
  * Created by arainfor on 1/10/15.
+ *
+ * 17-feb-15 akr - Add getValueString methods.
+ *
  */
 public class Temperature {
 
@@ -22,6 +25,13 @@ public class Temperature {
 
     }
 
+    public static String getValueString(Double value) {
+        NumberFormat df = NumberFormat.getInstance();
+        df.setMaximumFractionDigits(1);
+        df.setParseIntegerOnly(false);
+        return df.format(value);
+    }
+
     public int getIndex() {
         return index;
     }
@@ -38,13 +48,11 @@ public class Temperature {
         this.value = value;
     }
 
+    public String getValueString() {
+        return getValueString(value);
+    }
+
     public String toString() {
-
-        NumberFormat df = NumberFormat.getInstance();
-        df.setMaximumFractionDigits(1);
-        df.setParseIntegerOnly(false);
-
-
-        return name + StringConstants.KeyValueDelimiter + df.format(getValue());
+        return name + StringConstants.KeyValueDelimiter + getValueString();
     }
 }
