@@ -19,12 +19,13 @@ import java.util.Properties;
  * This class reads the thermometers in a thread and saves the values in a TemperaturesList object.
  *
  * Created by ARAINFOR on 1/31/2015.
+ * 17-feb-15 akr - Bump build version.  Improved detection of changed temperature.
  */
 public class ThermometersThread extends Thread {
 
     protected static final int APPLICATION_VERSION_MAJOR = 1;
     protected static final int APPLICATION_VERSION_MINOR = 0;
-    protected static final int APPLICATION_VERSION_BUILD = 0;
+    protected static final int APPLICATION_VERSION_BUILD = 2;
     private static final String APPLICATION_NAME = "ThermometerMonitor";
     private final Logger logger = LoggerFactory.getLogger(ThermometersThread.class);
     private final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1400"));
@@ -106,6 +107,7 @@ public class ThermometersThread extends Thread {
         while (true) {
 
             try {
+                boolean bDirty = false;
 
                 for (Temperature temperature : temperaturesList) {
                     Thermometer thermometer = thermometersList.get(temperature.getIndex());
@@ -113,18 +115,18 @@ public class ThermometersThread extends Thread {
                     if (!thermometer.getDs18B20().getFilename().contains("unknown")) {
                         try {
                             Double tempF = thermometer.getDs18B20().getTempF();
-                            temperature.setValue(tempF);
+
+                            if (!temperature.getValueString().equals(Temperature.getValueString(tempF))) {
+                                bDirty = true;
+                                temperature.setValue(tempF);
+                                temperaturesListCache.set(temperature.getIndex(), temperature);
+                            }
+
                         } catch (IOException e) {
                             logger.warn("Error reading thermometer {} Exception:", thermometer.getName(), e.getMessage());
                         }
-                    }
-                }
-
-                boolean bDirty = false;
-                for (int i = 0; i < temperaturesList.size(); i++) {
-                    if (!temperaturesList.get(i).toString().equals(temperaturesListCache.get(i).toString())) {
-                        bDirty = true;
-                        temperaturesListCache.get(i).setValue(temperaturesList.get(i).getValue());
+                    } else {
+                        temperaturesListCache.set(temperature.getIndex(), temperature);
                     }
                 }
 
