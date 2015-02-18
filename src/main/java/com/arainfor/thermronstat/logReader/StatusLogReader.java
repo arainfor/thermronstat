@@ -45,6 +45,7 @@ public class StatusLogReader extends LogReader {
         String logOffset = null;
         System.err.println(APPLICATION_NAME + " v" + APPLICATION_VERSION_MAJOR + "." + APPLICATION_VERSION_MINOR + "." + APPLICATION_VERSION_BUILD);
         Options options = new Options();
+        options.addOption("help", false, "This help.");
         options.addOption("log", true, "The log file.");
         options.addOption("config", true, "The configuration file.");
         options.addOption("offset", true, "The offset from log date.");
