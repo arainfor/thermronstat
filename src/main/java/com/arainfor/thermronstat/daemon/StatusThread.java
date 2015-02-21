@@ -103,7 +103,7 @@ public class StatusThread extends Thread {
             try {
                 for (RelayMap relay : relaysList) {
                     try {
-                        statusRelayCache.setValue(relay, relay.getPiGPIO().getValue());
+                        statusRelayCache.setValue(relay, relay.getPiGpio().getValue());
                     } catch (IOException e) {
                         logger.error("Error reading relay:", e);
                         e.printStackTrace();

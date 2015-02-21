@@ -94,7 +94,7 @@ public class ThermometersThread extends Thread {
     public void run() {
 
         ArrayList<Temperature> temperaturesList = TemperaturesList.getInstance().list();
-        ArrayList<Thermometer> thermometersList = new ThermometersList().list();
+        ArrayList<Thermometer> thermometersList = ThermometersList.getInstance().list();
 
         ArrayList<Temperature> temperaturesListCache = new ArrayList<Temperature>();
 
@@ -123,7 +123,7 @@ public class ThermometersThread extends Thread {
                             }
 
                         } catch (IOException e) {
-                            logger.warn("Error reading thermometer {} Exception:", thermometer.getName(), e.getMessage());
+                            logger.warn("Error reading thermometer {} IOException:", thermometer.getName(), e);
                         }
                     } else {
                         temperaturesListCache.set(temperature.getIndex(), temperature);

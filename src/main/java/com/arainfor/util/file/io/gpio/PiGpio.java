@@ -13,18 +13,20 @@ import java.io.*;
  *
  * @author atael
  */
-public class PiGPIO {
+public class PiGpio {
 
     public static final String GPIO_ON = "1";
     public static final String GPIO_OFF = "0";
     protected static final String IO_BASE_FS = System.getProperty("PiGPIO.IO_BASE_FS", "/sys/class/gpio/");
-    private static final Logger logger = LoggerFactory.getLogger(PiGPIO.class);
+    private static final Logger logger = LoggerFactory.getLogger(PiGpio.class);
     private static boolean foreignHardware = false;
     private final Pin pin;
+    private PiGpioCallback piGpioCallback;
     private FileWriter commandFile;
     private Direction direction;
+    private String valueFileName;
 
-    public PiGPIO (Pin pin, Direction direction) throws IOException {
+    public PiGpio(Pin pin, Direction direction) throws IOException {
 
     	/*** Init GPIO port for output ***/
 
@@ -46,8 +48,12 @@ public class PiGPIO {
 
     	setDirection(pin, direction);
 
-    	// Open file handle to issue commands to GPIO port
-        commandFile = new FileWriter(IO_BASE_FS + "gpio" + pin + "/value");
+        valueFileName = IO_BASE_FS + "gpio" + pin + "/value";
+
+        if (direction.ordinal() == Direction.OUT.ordinal()) {
+            // Open file handle to issue commands to GPIO port
+            commandFile = new FileWriter(valueFileName);
+        }
     }
 
     /**
@@ -56,11 +62,22 @@ public class PiGPIO {
     public static void main(String[] args) {
 
         try {
-            PiGPIO pigpio = new PiGPIO(new Pin(17), Direction.OUT);
+            PiGpio pigpio = new PiGpio(new Pin(17), Direction.OUT);
             pigpio.setValue(true);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+    }
+
+    public void registerCallback(PiGpioCallback piGpioCallback) {
+
+        this.piGpioCallback = piGpioCallback;
+
+        if (this.piGpioCallback != null) {
+            CallbackMonitor cm = new CallbackMonitor(this);
+            cm.start();
         }
 
     }
@@ -117,7 +134,7 @@ public class PiGPIO {
 
         StringBuilder sb = new StringBuilder();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(IO_BASE_FS + "gpio" + pin + "/value"));
+            BufferedReader br = new BufferedReader(new FileReader(valueFileName));
             try {
                 String line = br.readLine();
 
@@ -160,4 +177,46 @@ public class PiGPIO {
         return "GPIO Pin: " + getPin() + " Direction: " + getDirection();
     }
 
+    public void cleanup(Pin pin) throws IOException {
+        unExport(pin);
+    }
+
+    private class CallbackMonitor extends Thread {
+        long lastModified;
+        PiGpio piGpio;
+        private boolean lastValue = true;
+        private boolean currentValue = false;
+
+        public CallbackMonitor(PiGpio piGpio) {
+            super(CallbackMonitor.class.getSimpleName() + piGpio.getPin() + piGpio.getDirection());
+            this.piGpio = piGpio;
+            lastModified = new File(valueFileName).lastModified();
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                long modified = new File(valueFileName).lastModified();
+
+                try {
+                    currentValue = getValue();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if (currentValue != lastValue) {
+                    //logger.debug("GPIO pin:{} changed to:{}", getPin(), currentValue);
+                    lastModified = modified;
+                    lastValue = currentValue;
+                    piGpioCallback.subjectChanged(this.piGpio, currentValue);
+                }
+
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

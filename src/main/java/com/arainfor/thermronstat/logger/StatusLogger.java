@@ -72,8 +72,9 @@ public class StatusLogger extends FileLogger {
 
             if (shutdown) {
                 // the system just shutdown so record all the completed cycle's
-                for (String event : eventList) {
-                    logger.info(event);
+                Iterator<String> it = eventList.iterator();
+                while (it.hasNext()) {
+                    logger.info(it.next());
                 }
                 eventList.clear();
             }

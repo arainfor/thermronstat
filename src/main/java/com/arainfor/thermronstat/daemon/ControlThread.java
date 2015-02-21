@@ -58,7 +58,7 @@ public class ControlThread extends Thread {
 				try {
                     // loop thru all the relays and set values accordingly.
                     for (RelayMap rm : relayMap) {
-                        rm.getPiGPIO().setValue(false);
+                        rm.getPiGpio().setValue(false);
                     }
 
 					statusControlValue.write(0);
@@ -138,7 +138,7 @@ public class ControlThread extends Thread {
 		userWvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/3");
 		userOvalue = new ValueFileIO(relayPath.getAbsolutePath() + "/4");
 
-        thermometers = new ThermometersList().list();
+        thermometers = ThermometersList.getInstance().list();
 
 		System.out.println("Target Temperature File: " + userTargetTempValue);
         System.out.println("Indoor Temperature Name: " + thermometers.get(0).getName() + " File: " + thermometers.get(0).getDs18B20().getFilename());
@@ -191,7 +191,7 @@ public class ControlThread extends Thread {
                         if (stage1RelayPosition) { // turn off the relay if user wants it off!
                             // loop thru all the relays and set values accordingly.
                             for (RelayMap rm : relayMap) {
-                                rm.getPiGPIO().setValue(false);
+                                rm.getPiGpio().setValue(false);
                             }
                             logSingle("Stage1 OFF");
                         }
@@ -246,9 +246,9 @@ public class ControlThread extends Thread {
                     for (RelayMap rm : relayMap) {
                         RelayDef rd = rm.getRelayDef();
                         if (relaysEnabled.contains(rd)) {
-                            rm.getPiGPIO().setValue(true);
+                            rm.getPiGpio().setValue(true);
                         } else {
-                            rm.getPiGPIO().setValue(false);
+                            rm.getPiGpio().setValue(false);
                         }
                     }
 

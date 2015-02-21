@@ -35,23 +35,35 @@ public class Thermometer {
         return ds18B20;
     }
 
-    public String toString() {
-
+    /**
+     * Prefered method to call as there is no IO
+     *
+     * @param value
+     * @return
+     */
+    public String toString(double value) {
         String temperature = Integer.toString(Integer.MIN_VALUE);
 
         try {
             NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(1);
 
-            try {
-                temperature = nf.format(ds18B20.getTempF());
-            } catch (IOException e) {
-                logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e.getMessage());
-            }
+            temperature = nf.format(value);
         } catch (Exception e) {
-            logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e.getMessage());
+            logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e);
         }
         return new String(name + StringConstants.KeyValueDelimiter + temperature);
+
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return toString(getDs18B20().getTempF());
+        } catch (IOException e) {
+            logger.warn("Error reading thermometer {} IOException:", ds18B20.getFilename(), e);
+        }
+        return new String(name + StringConstants.KeyValueDelimiter + Double.POSITIVE_INFINITY);
     }
 
 }

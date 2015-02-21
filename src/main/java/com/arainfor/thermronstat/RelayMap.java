@@ -1,19 +1,19 @@
 package com.arainfor.thermronstat;
 
 import com.arainfor.util.file.io.ValueFileIO;
-import com.arainfor.util.file.io.gpio.PiGPIO;
+import com.arainfor.util.file.io.gpio.PiGpio;
 
 /**
  * Created by arainfor on 1/10/15.
  */
 public class RelayMap {
     private final ValueFileIO valueFileIO;
-    private final PiGPIO piGPIO;
+    private final PiGpio piGpio;
     private final RelayDef relayDef;
 
-    public RelayMap(RelayDef relayDef, PiGPIO piGPIO, ValueFileIO valueFileIO) {
+    public RelayMap(RelayDef relayDef, PiGpio piGpio, ValueFileIO valueFileIO) {
         this.relayDef = relayDef;
-        this.piGPIO = piGPIO;
+        this.piGpio = piGpio;
         this.valueFileIO = valueFileIO;
     }
 
@@ -21,8 +21,8 @@ public class RelayMap {
         return valueFileIO;
     }
 
-    public PiGPIO getPiGPIO() {
-        return piGPIO;
+    public PiGpio getPiGpio() {
+        return piGpio;
     }
 
     public RelayDef getRelayDef() {

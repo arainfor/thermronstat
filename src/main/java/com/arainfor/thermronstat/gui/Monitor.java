@@ -7,7 +7,7 @@ import com.arainfor.thermronstat.Thermometer;
 import com.arainfor.thermronstat.ThermometersList;
 import com.arainfor.util.file.io.Path;
 import com.arainfor.util.file.io.ValueFileIO;
-import com.arainfor.util.file.io.gpio.PiGPIO;
+import com.arainfor.util.file.io.gpio.PiGpio;
 import com.arainfor.util.file.io.thermometer.DS18B20;
 import org.apache.commons.cli.*;
 
@@ -30,7 +30,7 @@ public class Monitor {
     private static final int APPLICATION_VERSION_MINOR = 0;
     private static final int APPLICATION_VERSION_BUILD = 5;
     // relays
-    protected static PiGPIO stage1Relay;  // relay for Stage 1
+    protected static PiGpio stage1Relay;  // relay for Stage 1
     // value files
     private static ValueFileIO statusControl;
     private static ValueFileIO stage1Control;   // user control file for stage1Relay
@@ -207,7 +207,7 @@ public class Monitor {
         stage1Control = new ValueFileIO(relayPath.getAbsolutePath() + "/0");
         statusControl = new ValueFileIO(statusPath.getAbsolutePath() + "/0");
 
-        ArrayList<Thermometer> thermometers = new ThermometersList().list();
+        ArrayList<Thermometer> thermometers = ThermometersList.getInstance().list();
 
         System.out.println("Target Temperature File: " + targetControl);
         System.out.println("Indoor Temperature Name: " + thermometers.get(0).getName() + " File: " + thermometers.get(0).getDs18B20().getFilename());

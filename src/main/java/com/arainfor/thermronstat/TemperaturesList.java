@@ -25,6 +25,12 @@ public class TemperaturesList {
         return instance;
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("Singleton object " + this.getClass().getSimpleName() + " cannot be cloned");
+    }
+
+
     public ArrayList<Temperature> list() {
         return temperatures;
     }

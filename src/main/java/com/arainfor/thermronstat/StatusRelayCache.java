@@ -18,6 +18,11 @@ public class StatusRelayCache {
         return instance;
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException("Singleton object " + this.getClass().getSimpleName() + " cannot be cloned");
+    }
+
     public void setValue(RelayMap relay, boolean value) {
         cache.put(relay, value);
     }
