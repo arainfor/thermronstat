@@ -23,7 +23,7 @@ import java.util.Properties;
  */
 public class HvacMonitor extends Thread implements SysFsGpioCallback, ThermometerCallback {
 
-    protected static final String APPLICATION_NAME = "HvacMonitor";
+    protected static final String APPLICATION_NAME = HvacMonitor.class.getSimpleName();
     protected static final int APPLICATION_VERSION_MAJOR = 2;
     protected static final int APPLICATION_VERSION_MINOR = 0;
     protected static final int APPLICATION_VERSION_BUILD = 0;
@@ -113,14 +113,6 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
 
         statusLogger = new StatusLogger();
 
-//        log.info("spawning task to read thermometers");
-//        ThermometersThread thermometersThread = new ThermometersThread();
-//        thermometersThread.start();
-
-//        log.info("spawning task to log status changes");
-//        StatusThread statusThread = new StatusThread();
-//        statusThread.start();
-
         new HvacMonitor().start();
 
     }
@@ -153,17 +145,11 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
 
         // Now just sit and wait for the magic to happen!!
         while (true) {
-//            try {
-//                Map<RelayMap, Boolean> statusRelayCache = StatusRelayCache.getInstance().getCache();
-//                statusLogger.logRelays(statusRelayCache);
-                try {
-                    sleep(sleep);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-//            } catch (Exception e) {
-//                logger.error("Unhandled exception:", e);
-//            }
+            try {
+                sleep(sleep);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -181,9 +167,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
                 break;
             }
         }
-
-
-    }
+   }
 
     @Override
     public synchronized void subjectChanged(Thermometer thermometerChanged, Double value) {
