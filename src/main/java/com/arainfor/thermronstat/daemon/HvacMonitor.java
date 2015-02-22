@@ -175,11 +175,13 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
         StatusRelayCache statusRelayCache = StatusRelayCache.getInstance();
 
         for (RelayMap relay : relaysList) {
-            if (relay.getSysFsGpio().getPin() == sysFsGpio.getPin())
+            if (relay.getSysFsGpio().getPin() == sysFsGpio.getPin()) {
                 statusRelayCache.setValue(relay, value);
+                statusLogger.logRelays(statusRelayCache.getCache());
+                break;
+            }
         }
 
-        statusLogger.logRelays(statusRelayCache.getCache());
 
     }
 
@@ -195,6 +197,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
                 temperature.setValue(value);
                 temperatureList.set(temperature.getIndex(), temperature);
                 temperatureLogger.logMessage(temperatureList.toString());
+                break;
             }
         }
     }

@@ -10,12 +10,12 @@ package com.arainfor.util.file.io.gpio;
 public enum Direction {
 
 	IN() {
-		public String get() {
+		public String value() {
 			return "in";
 		}
 	},
 	OUT() {
-		public String get() {
+		public String value() {
 			return "out";
 		}
 	}
@@ -25,10 +25,10 @@ public enum Direction {
 		return Direction.values()[value];
 	}
 
-    public abstract String get();
+    public abstract String value();
 
     public String toString() {
-        return get();
+        return value();
     }
 
 }

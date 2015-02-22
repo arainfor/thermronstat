@@ -15,8 +15,6 @@ import java.io.*;
  */
 public class SysFsGpio {
 
-    public static final String GPIO_ON = "1";
-    public static final String GPIO_OFF = "0";
     protected static final String IO_BASE_FS = System.getProperty("GPIO.IO_BASE_FS", "/sys/class/gpio/");
     private static final Logger logger = LoggerFactory.getLogger(SysFsGpio.class);
     private static boolean foreignHardware = false;
@@ -124,7 +122,7 @@ public class SysFsGpio {
         FileWriter directionFile = new FileWriter(directionFileName);
 
         // Set port for output
-        directionFile.write(direction.get());
+        directionFile.write(direction.value());
         directionFile.flush();
         directionFile.close();
     }
@@ -154,14 +152,13 @@ public class SysFsGpio {
     }
 
     public void setValue(Boolean value) throws IOException {
-
         if (foreignHardware)
             return;
 
         if (value) {
-            commandFile.write(GPIO_ON);
+            commandFile.write(Value.SET.value());
     	} else {
-    		commandFile.write(GPIO_OFF);
+    		commandFile.write(Value.UNSET.value());
     	}
     	commandFile.flush();
     }
