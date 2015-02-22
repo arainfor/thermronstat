@@ -42,7 +42,10 @@ public class StatusLogger extends FileLogger {
         ArrayList<Temperature> temperaturesList = TemperaturesList.getInstance().list();
 
         // Read the relays...
-        for (RelayMap relay  : statusRelayValue.keySet()) {
+        Iterator<Map.Entry<RelayMap, Boolean>> relayMapInterator = statusRelayValue.entrySet().iterator();
+        while (relayMapInterator.hasNext()) {
+            Map.Entry<RelayMap, Boolean> relayMapEntry = relayMapInterator.next();
+            RelayMap relay = relayMapEntry.getKey();
             int idx = relay.getRelayDef().ordinal();
             relayMapNow.put(idx, statusRelayValue.get(relay));
             if (relayMapNow.get(idx) != relayMapLast.get(idx)) {
@@ -60,7 +63,10 @@ public class StatusLogger extends FileLogger {
             StringBuffer sb = new StringBuffer();
             logHeader(sb);
 
-            for (RelayMap relay  : statusRelayValue.keySet()) {
+            Iterator<Map.Entry<RelayMap, Boolean>> entryIterator = statusRelayValue.entrySet().iterator();
+            while (entryIterator.hasNext()) {
+                Map.Entry<RelayMap, Boolean> mapEntry = entryIterator.next();
+                RelayMap relay = mapEntry.getKey();
                 int idx = relay.getRelayDef().ordinal();
                 String entry = relay.getRelayDef() + StringConstants.KeyValueDelimiter + relayMapNow.get(idx);
                 sb.append(entry);

@@ -6,6 +6,8 @@ package com.arainfor.util.file.io.thermometer;
 import com.arainfor.thermronstat.Temperature;
 import com.arainfor.thermronstat.Thermometer;
 import com.arainfor.thermronstat.ThermometersList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -16,9 +18,9 @@ import java.nio.charset.Charset;
  */
 public class DS18B20 extends Thread {
 
-	// The 1wire DS18B20's are connected to GPIO4 pin.
+    private static final Logger logger = LoggerFactory.getLogger(DS18B20.class);
+    // The 1wire DS18B20's are connected to GPIO4 pin.
     private final String SYS_BUS_FS = "/sys/bus/w1/devices/";
-
     private String filename = null;
     private String serialId = null;
     private ThermometerCallback thermometerCallback;
@@ -79,7 +81,7 @@ public class DS18B20 extends Thread {
                 return Double.valueOf(celsius) / 1000;
             }
 		}
-		return Double.NEGATIVE_INFINITY;
+        return Double.POSITIVE_INFINITY;
 
 	}
 
@@ -99,35 +101,37 @@ public class DS18B20 extends Thread {
         public CallbackMonitor(DS18B20 ds18B20) {
             super(CallbackMonitor.class.getSimpleName() + ds18B20.getSerialId());
             this.ds18B20 = ds18B20;
-            try {
-                lastTemperature = Temperature.getValueString(this.ds18B20.getTempF());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                lastTemperature = Temperature.getValueString(this.ds18B20.getTempF());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
 
         @Override
         public void run() {
             while (true) {
-
+                double tempF = 0;
                 try {
-                    double tempF = this.ds18B20.getTempF();
+                    tempF = this.ds18B20.getTempF();
                     String currentTemperature = Temperature.getValueString(tempF);
                     if (!currentTemperature.equalsIgnoreCase(lastTemperature)) {
+                        //logger.debug("Temperature changed {}/{}", lastTemperature, currentTemperature);
                         ThermometersList thermometersList = ThermometersList.getInstance();
                         for (Thermometer thermometer : thermometersList.list()) {
                             if (thermometer.getDs18B20().getFilename().equalsIgnoreCase(this.ds18B20.getFilename())) {
                                 thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
+                                break;
                             }
                         }
                     }
-                    lastTemperature = currentTemperature.toString();
+                    lastTemperature = currentTemperature;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 try {
-                    Thread.sleep(4098);
+                    Thread.sleep(5 * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

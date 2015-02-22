@@ -2,6 +2,7 @@ package com.arainfor.thermronstat.daemon;
 
 import com.arainfor.thermronstat.*;
 import com.arainfor.thermronstat.logger.StatusLogger;
+import com.arainfor.thermronstat.logger.TemperatureLogger;
 import com.arainfor.util.file.PropertiesLoader;
 import com.arainfor.util.file.io.gpio.SysFsGpio;
 import com.arainfor.util.file.io.gpio.SysFsGpioCallback;
@@ -31,6 +32,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
     protected final int sleep = Integer.parseInt(System.getProperty(APPLICATION_NAME + ".poll.sleep", "1000"));
     private StatusRelaysList statusRelaysList;
     private ThermometersList thermometersList;
+    private TemperatureLogger temperatureLogger;
 
     public HvacMonitor() {
 
@@ -130,6 +132,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
 
         // Create the thermometers
         thermometersList = ThermometersList.getInstance();
+        temperatureLogger = new TemperatureLogger();
 
         // Register as the callback class
         for (Thermometer thermometer : thermometersList.list()) {
@@ -184,14 +187,14 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
     public synchronized void subjectChanged(Thermometer thermometerChanged, Double value) {
 
         ArrayList<Temperature> temperatureList = TemperaturesList.getInstance().list();
-
         Iterator<Temperature> it = temperatureList.iterator();
+
         while (it.hasNext()) {
             Temperature temperature = it.next();
             if (temperature.getIndex() == thermometerChanged.getIndex()) {
                 temperature.setValue(value);
                 temperatureList.set(temperature.getIndex(), temperature);
-
+                temperatureLogger.logMessage(temperatureList.toString());
             }
         }
     }

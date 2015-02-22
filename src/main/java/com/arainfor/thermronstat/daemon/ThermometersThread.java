@@ -128,17 +128,18 @@ public class ThermometersThread extends Thread {
                     } else {
                         temperaturesListCache.set(temperature.getIndex(), temperature);
                     }
+
+                    try {
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        logger.error("Interupted Exception:", e);
+                    }
                 }
 
                 if (bDirty) {
                     temperatureLogger.logMessage(temperaturesList.toString());
                 }
 
-                try {
-                    Thread.sleep(sleep);
-                } catch (InterruptedException e) {
-                    logger.error("Interupted Exception:", e);
-                }
             } catch (Exception e) {
                 logger.error("Unhandled Exception:", e);
             }
