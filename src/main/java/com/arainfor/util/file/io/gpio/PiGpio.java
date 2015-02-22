@@ -182,7 +182,6 @@ public class PiGpio {
     }
 
     private class CallbackMonitor extends Thread {
-        long lastModified;
         PiGpio piGpio;
         private boolean lastValue = true;
         private boolean currentValue = false;
@@ -190,13 +189,11 @@ public class PiGpio {
         public CallbackMonitor(PiGpio piGpio) {
             super(CallbackMonitor.class.getSimpleName() + piGpio.getPin() + piGpio.getDirection());
             this.piGpio = piGpio;
-            lastModified = new File(valueFileName).lastModified();
         }
 
         @Override
         public void run() {
             while (true) {
-                long modified = new File(valueFileName).lastModified();
 
                 try {
                     currentValue = getValue();
@@ -206,7 +203,6 @@ public class PiGpio {
 
                 if (currentValue != lastValue) {
                     //logger.debug("GPIO pin:{} changed to:{}", getPin(), currentValue);
-                    lastModified = modified;
                     lastValue = currentValue;
                     piGpioCallback.subjectChanged(this.piGpio, currentValue);
                 }
