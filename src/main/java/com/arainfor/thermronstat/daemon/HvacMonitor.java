@@ -3,8 +3,8 @@ package com.arainfor.thermronstat.daemon;
 import com.arainfor.thermronstat.*;
 import com.arainfor.thermronstat.logger.StatusLogger;
 import com.arainfor.util.file.PropertiesLoader;
-import com.arainfor.util.file.io.gpio.PiGpio;
-import com.arainfor.util.file.io.gpio.PiGpioCallback;
+import com.arainfor.util.file.io.gpio.SysFsGpio;
+import com.arainfor.util.file.io.gpio.SysFsGpioCallback;
 import com.arainfor.util.file.io.thermometer.ThermometerCallback;
 import com.arainfor.util.logger.AppLogger;
 import org.apache.commons.cli.*;
@@ -20,7 +20,7 @@ import java.util.Properties;
 /**
  * Created by ARAINFOR on 1/31/2015.
  */
-public class HvacMonitor extends Thread implements PiGpioCallback, ThermometerCallback {
+public class HvacMonitor extends Thread implements SysFsGpioCallback, ThermometerCallback {
 
     protected static final String APPLICATION_NAME = "HvacMonitor";
     protected static final int APPLICATION_VERSION_MAJOR = 1;
@@ -41,7 +41,7 @@ public class HvacMonitor extends Thread implements PiGpioCallback, ThermometerCa
                 StatusRelaysList srl = StatusRelaysList.getInstance();
                 Iterator<RelayMap> it = srl.list().iterator();
                 while (it.hasNext()) {
-                    PiGpio gpio = it.next().getPiGpio();
+                    SysFsGpio gpio = it.next().getSysFsGpio();
                     if (gpio != null) {
                         try {
                             gpio.cleanup(gpio.getPin());
@@ -145,7 +145,7 @@ public class HvacMonitor extends Thread implements PiGpioCallback, ThermometerCa
         // Register as the callback class
         for (RelayMap relayMap : statusRelaysList.list()) {
             statusRelayCache.setValue(relayMap, false);  // Set the initial value
-            relayMap.getPiGpio().registerCallback(this);
+            relayMap.getSysFsGpio().registerCallback(this);
         }
 
         // Now just sit and wait for the magic to happen!!
@@ -165,14 +165,14 @@ public class HvacMonitor extends Thread implements PiGpioCallback, ThermometerCa
     }
 
     @Override
-    public synchronized void subjectChanged(PiGpio piGpio, boolean value) {
+    public synchronized void subjectChanged(SysFsGpio sysFsGpio, boolean value) {
 
         //logger.debug("GPIO Pin:{} changed to:{}", piGpio.getPin(), value);
         ArrayList<RelayMap> relaysList = StatusRelaysList.getInstance().list();
         StatusRelayCache statusRelayCache = StatusRelayCache.getInstance();
 
         for (RelayMap relay : relaysList) {
-            if (relay.getPiGpio().getPin() == piGpio.getPin())
+            if (relay.getSysFsGpio().getPin() == sysFsGpio.getPin())
                 statusRelayCache.setValue(relay, value);
         }
 

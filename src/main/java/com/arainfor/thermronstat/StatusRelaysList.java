@@ -1,8 +1,8 @@
 package com.arainfor.thermronstat;
 
 import com.arainfor.util.file.io.gpio.Direction;
-import com.arainfor.util.file.io.gpio.PiGpio;
 import com.arainfor.util.file.io.gpio.Pin;
+import com.arainfor.util.file.io.gpio.SysFsGpio;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,9 +12,9 @@ import java.util.ArrayList;
  */
 public class StatusRelaysList {
 
-    private static PiGpio relayG;   // relay for Fan G
-    private static PiGpio relayY1;  // relay for Stage 1
-    private static PiGpio relayY2;  // relay for Stage 2
+    private static SysFsGpio relayG;   // relay for Fan G
+    private static SysFsGpio relayY1;  // relay for Stage 1
+    private static SysFsGpio relayY2;  // relay for Stage 2
     private static StatusRelaysList instance;
     // these map the GPIO to a RelayInputs value
     private final ArrayList<RelayMap> relaysList = new ArrayList<RelayMap>();
@@ -23,9 +23,9 @@ public class StatusRelaysList {
         // setup gpio
         try {
 
-            relayG = new PiGpio(new Pin(Integer.parseInt(System.getProperty("g.pin", "27"))), Direction.IN);
-            relayY1 = new PiGpio(new Pin(Integer.parseInt(System.getProperty("y1.pin", "17"))), Direction.IN);
-            relayY2 = new PiGpio(new Pin(Integer.parseInt(System.getProperty("y2.pin", "22"))), Direction.IN);
+            relayG = new SysFsGpio(new Pin(Integer.parseInt(System.getProperty("g.pin", "27"))), Direction.IN);
+            relayY1 = new SysFsGpio(new Pin(Integer.parseInt(System.getProperty("y1.pin", "17"))), Direction.IN);
+            relayY2 = new SysFsGpio(new Pin(Integer.parseInt(System.getProperty("y2.pin", "22"))), Direction.IN);
 
         } catch (IOException ioe) {
             System.err.println("Fatal error initializing GPIO: " + ioe.getLocalizedMessage());

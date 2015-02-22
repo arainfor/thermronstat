@@ -58,7 +58,7 @@ public class ControlThread extends Thread {
 				try {
                     // loop thru all the relays and set values accordingly.
                     for (RelayMap rm : relayMap) {
-                        rm.getPiGpio().setValue(false);
+                        rm.getSysFsGpio().setValue(false);
                     }
 
 					statusControlValue.write(0);
@@ -191,7 +191,7 @@ public class ControlThread extends Thread {
                         if (stage1RelayPosition) { // turn off the relay if user wants it off!
                             // loop thru all the relays and set values accordingly.
                             for (RelayMap rm : relayMap) {
-                                rm.getPiGpio().setValue(false);
+                                rm.getSysFsGpio().setValue(false);
                             }
                             logSingle("Stage1 OFF");
                         }
@@ -246,9 +246,9 @@ public class ControlThread extends Thread {
                     for (RelayMap rm : relayMap) {
                         RelayDef rd = rm.getRelayDef();
                         if (relaysEnabled.contains(rd)) {
-                            rm.getPiGpio().setValue(true);
+                            rm.getSysFsGpio().setValue(true);
                         } else {
-                            rm.getPiGpio().setValue(false);
+                            rm.getSysFsGpio().setValue(false);
                         }
                     }
 

@@ -10,23 +10,23 @@ import java.io.*;
 
 
 /**
- *
- * @author atael
+ * This class provides a POJ interface to the SysFs User Space Kernel driver to GPIO
+ * @author arainfor
  */
-public class PiGpio {
+public class SysFsGpio {
 
     public static final String GPIO_ON = "1";
     public static final String GPIO_OFF = "0";
     protected static final String IO_BASE_FS = System.getProperty("PiGPIO.IO_BASE_FS", "/sys/class/gpio/");
-    private static final Logger logger = LoggerFactory.getLogger(PiGpio.class);
+    private static final Logger logger = LoggerFactory.getLogger(SysFsGpio.class);
     private static boolean foreignHardware = false;
     private final Pin pin;
-    private PiGpioCallback piGpioCallback;
+    private SysFsGpioCallback sysFsGpioCallback;
     private FileWriter commandFile;
     private Direction direction;
     private String valueFileName;
 
-    public PiGpio(Pin pin, Direction direction) throws IOException {
+    public SysFsGpio(Pin pin, Direction direction) throws IOException {
 
     	/*** Init GPIO port for output ***/
 
@@ -62,7 +62,7 @@ public class PiGpio {
     public static void main(String[] args) {
 
         try {
-            PiGpio pigpio = new PiGpio(new Pin(17), Direction.OUT);
+            SysFsGpio pigpio = new SysFsGpio(new Pin(17), Direction.OUT);
             pigpio.setValue(true);
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -71,11 +71,11 @@ public class PiGpio {
 
     }
 
-    public void registerCallback(PiGpioCallback piGpioCallback) {
+    public void registerCallback(SysFsGpioCallback sysFsGpioCallback) {
 
-        this.piGpioCallback = piGpioCallback;
+        this.sysFsGpioCallback = sysFsGpioCallback;
 
-        if (this.piGpioCallback != null) {
+        if (this.sysFsGpioCallback != null) {
             CallbackMonitor cm = new CallbackMonitor(this);
             cm.start();
         }
@@ -182,13 +182,13 @@ public class PiGpio {
     }
 
     private class CallbackMonitor extends Thread {
-        PiGpio piGpio;
+        SysFsGpio sysFsGpio;
         private boolean lastValue = true;
         private boolean currentValue = false;
 
-        public CallbackMonitor(PiGpio piGpio) {
-            super(CallbackMonitor.class.getSimpleName() + piGpio.getPin() + piGpio.getDirection());
-            this.piGpio = piGpio;
+        public CallbackMonitor(SysFsGpio sysFsGpio) {
+            super(CallbackMonitor.class.getSimpleName() + sysFsGpio.getPin() + sysFsGpio.getDirection());
+            this.sysFsGpio = sysFsGpio;
         }
 
         @Override
@@ -204,7 +204,7 @@ public class PiGpio {
                 if (currentValue != lastValue) {
                     //logger.debug("GPIO pin:{} changed to:{}", getPin(), currentValue);
                     lastValue = currentValue;
-                    piGpioCallback.subjectChanged(this.piGpio, currentValue);
+                    sysFsGpioCallback.subjectChanged(this.sysFsGpio, currentValue);
                 }
 
                 try {
