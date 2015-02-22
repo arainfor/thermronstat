@@ -1,2 +1,2 @@
 #DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
-export LOGPATH="/var/log/thermostat"
+export LOGPATH="${THERMOSTAT_HOME}/log"

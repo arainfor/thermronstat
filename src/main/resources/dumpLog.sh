@@ -1,3 +1,3 @@
 #!/bin/sh
-. /home/pi/thermronstat/thermostat.common
-java ${DEBUG} -cp "/home/pi/thermronstat/lib/*" "com.arainfor.thermronstat.logReader.StatusLogReader" $1 $2 $3 $4 $5
+. ${THERMOSTAT_HOME}/thermostat.common
+java ${DEBUG} -cp "${THERMOSTAT_HOME}/lib/*" "com.arainfor.thermronstat.logReader.StatusLogReader" $1 $2 $3 $4 $5
