@@ -28,7 +28,7 @@ public class Temperature {
     public static String getValueString(Double value) {
         NumberFormat df = NumberFormat.getInstance();
         df.setMaximumFractionDigits(1);
-        df.setMaximumFractionDigits(1);
+        df.setMinimumFractionDigits(1);
         df.setParseIntegerOnly(false);
         return df.format(value);
     }
