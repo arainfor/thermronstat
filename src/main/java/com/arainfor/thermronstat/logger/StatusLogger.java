@@ -74,7 +74,10 @@ public class StatusLogger extends FileLogger {
             }
 
             // add the string to our event list
-            eventList.add(sb.toString() + temperaturesList.get(0).toString() + StringConstants.FieldDelimiter + temperaturesList.get(2).toString() + StringConstants.FieldDelimiter + temperaturesList.get(3).toString());
+            eventList.add(sb.toString() + temperaturesList.get(0).toString()
+                    + StringConstants.FieldDelimiter + temperaturesList.get(2).toString()
+                    + StringConstants.FieldDelimiter + temperaturesList.get(3).toString()
+                    + StringConstants.FieldDelimiter + temperaturesList.get(1).toString());
 
             if (shutdown) {
                 // the system just shutdown so record all the completed cycle's

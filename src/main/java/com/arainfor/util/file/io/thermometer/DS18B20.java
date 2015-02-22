@@ -101,11 +101,6 @@ public class DS18B20 extends Thread {
         public CallbackMonitor(DS18B20 ds18B20) {
             super(CallbackMonitor.class.getSimpleName() + ds18B20.getSerialId());
             this.ds18B20 = ds18B20;
-//            try {
-//                lastTemperature = Temperature.getValueString(this.ds18B20.getTempF());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
         }
 
         @Override
@@ -131,7 +126,7 @@ public class DS18B20 extends Thread {
                 }
 
                 try {
-                    Thread.sleep(5 * 1000);
+                    Thread.sleep(Integer.parseInt(System.getProperty(DS18B20.class.getSimpleName() + ".sleep", "4750")));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

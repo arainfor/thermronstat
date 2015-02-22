@@ -24,8 +24,8 @@ import java.util.Properties;
 public class HvacMonitor extends Thread implements SysFsGpioCallback, ThermometerCallback {
 
     protected static final String APPLICATION_NAME = "HvacMonitor";
-    protected static final int APPLICATION_VERSION_MAJOR = 1;
-    protected static final int APPLICATION_VERSION_MINOR = 1;
+    protected static final int APPLICATION_VERSION_MAJOR = 2;
+    protected static final int APPLICATION_VERSION_MINOR = 0;
     protected static final int APPLICATION_VERSION_BUILD = 0;
     private static StatusLogger statusLogger;
     protected final Logger logger;

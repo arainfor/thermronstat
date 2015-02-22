@@ -209,8 +209,9 @@ public class SysFsGpio {
 
     private class CallbackMonitor extends Thread {
         SysFsGpio sysFsGpio;
-        private boolean lastValue = true;
+        private boolean lastValue = false;
         private boolean currentValue = false;
+        private boolean firstRun = true;
 
         public CallbackMonitor(SysFsGpio sysFsGpio) {
             super(CallbackMonitor.class.getSimpleName() + sysFsGpio.getPin() + sysFsGpio.getDirection());
@@ -227,14 +228,15 @@ public class SysFsGpio {
                     e.printStackTrace();
                 }
 
-                if (currentValue != lastValue) {
+                if (firstRun || currentValue != lastValue) {
                     //logger.debug("GPIO pin:{} changed to:{}", getPin(), currentValue);
                     lastValue = currentValue;
+                    firstRun = false;
                     sysFsGpioCallback.subjectChanged(this.sysFsGpio, currentValue);
                 }
 
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(Integer.parseInt(System.getProperty(SysFsGpio.class.getSimpleName() + ".sleep", "1100")));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
