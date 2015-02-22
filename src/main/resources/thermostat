@@ -9,6 +9,7 @@
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin
+export THERMOSTAT_HOME=/var/local/thermostat
 
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
