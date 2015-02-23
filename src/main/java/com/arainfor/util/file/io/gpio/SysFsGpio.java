@@ -19,7 +19,6 @@ public class SysFsGpio {
     private static final Logger logger = LoggerFactory.getLogger(SysFsGpio.class);
     private static boolean foreignHardware = false;
     private final Pin pin;
-    private SysFsGpioCallback sysFsGpioCallback;
     private FileWriter commandFile;
     private Direction direction;
     private String valueFileName;
@@ -66,17 +65,6 @@ public class SysFsGpio {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-
-    }
-
-    public void registerCallback(SysFsGpioCallback sysFsGpioCallback) {
-
-        this.sysFsGpioCallback = sysFsGpioCallback;
-
-        if (this.sysFsGpioCallback != null) {
-            CallbackMonitor cm = new CallbackMonitor(this);
-            cm.start();
         }
 
     }
@@ -207,40 +195,4 @@ public class SysFsGpio {
         unExport(pin);
     }
 
-    private class CallbackMonitor extends Thread {
-        SysFsGpio sysFsGpio;
-        private boolean lastValue = false;
-        private boolean currentValue = false;
-        private boolean firstRun = true;
-
-        public CallbackMonitor(SysFsGpio sysFsGpio) {
-            super(CallbackMonitor.class.getSimpleName() + sysFsGpio.getPin() + sysFsGpio.getDirection());
-            this.sysFsGpio = sysFsGpio;
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-
-                try {
-                    currentValue = getValue();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                if (firstRun || currentValue != lastValue) {
-                    //logger.debug("GPIO pin:{} changed to:{}", getPin(), currentValue);
-                    lastValue = currentValue;
-                    firstRun = false;
-                    sysFsGpioCallback.subjectChanged(this.sysFsGpio, currentValue);
-                }
-
-                try {
-                    Thread.sleep(Integer.parseInt(System.getProperty(SysFsGpio.class.getSimpleName() + ".sleep", "1100")));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 }

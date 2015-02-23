@@ -1,10 +1,12 @@
 /**
- * 
+ * This class is provides access to the DS18x20 series of temperature sensors.
+ * The DS18x20 is a 1-wire (Dallas) protocol sensor.
+ *
+ * With this class you are able to either manually access the device or you can
+ * register a callback and be notified of any changes.
  */
 package com.arainfor.util.file.io.thermometer;
 
-import com.arainfor.thermronstat.Temperature;
-import com.arainfor.thermronstat.Thermometer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +24,7 @@ public class DS18B20 extends Thread {
     private final String SYS_BUS_FS = "/sys/bus/w1/devices/";
     private String filename = null;
     private String serialId = null;
-    private ThermometerCallback thermometerCallback;
     private boolean valid;
-    private Thermometer thermometer;
 
     public DS18B20(String serialId) {
         this.serialId = serialId;
@@ -41,24 +41,14 @@ public class DS18B20 extends Thread {
     }
 
     public Double getTempF() throws IOException {
-		return CelToFar(readRaw());
+		return CelToFar(read());
 	}
 	
 	public Double getTempC() throws IOException {
-		return readRaw();
+		return read();
 	}
 
-    public void registerCallback(ThermometerCallback thermometerCallback, Thermometer thermometer) {
-        this.thermometerCallback = thermometerCallback;
-        this.thermometer = thermometer;
-        if (this.thermometerCallback != null && this.thermometer != null) {
-            CallbackMonitor cm = new CallbackMonitor(this);
-            cm.start();
-
-        }
-    }
-
-	protected Double readRaw() throws IOException {
+	protected Double read() throws IOException {
         if (isValid()) {
             InputStream fis;
 			BufferedReader br;
@@ -94,38 +84,4 @@ public class DS18B20 extends Thread {
         return valid;
     }
 
-    private class CallbackMonitor extends Thread {
-
-        DS18B20 ds18B20;
-        String lastTemperature;
-
-        public CallbackMonitor(DS18B20 ds18B20) {
-            super(CallbackMonitor.class.getSimpleName() + ds18B20.getSerialId());
-            this.ds18B20 = ds18B20;
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-                double tempF = 0;
-                try {
-                    tempF = this.ds18B20.getTempF();
-                    String currentTemperature = Temperature.getValueString(tempF);
-                    if (!currentTemperature.equalsIgnoreCase(lastTemperature)) {
-                        thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
-                    }
-                    lastTemperature = currentTemperature;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    Thread.sleep(Integer.parseInt(System.getProperty(DS18B20.class.getSimpleName() + ".sleep", "4750")));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
 }
