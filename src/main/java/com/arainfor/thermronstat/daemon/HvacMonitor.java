@@ -129,7 +129,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
         // Register as the callback class
         for (Thermometer thermometer : thermometersList.list()) {
             if (thermometer.getDs18B20().isValid()) {
-                thermometer.getDs18B20().registerCallback(this);
+                thermometer.getDs18B20().registerCallback(this, thermometer);
             }
         }
 

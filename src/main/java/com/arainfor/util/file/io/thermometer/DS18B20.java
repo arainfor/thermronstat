@@ -5,7 +5,6 @@ package com.arainfor.util.file.io.thermometer;
 
 import com.arainfor.thermronstat.Temperature;
 import com.arainfor.thermronstat.Thermometer;
-import com.arainfor.thermronstat.ThermometersList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +24,7 @@ public class DS18B20 extends Thread {
     private String serialId = null;
     private ThermometerCallback thermometerCallback;
     private boolean valid;
+    private Thermometer thermometer;
 
     public DS18B20(String serialId) {
         this.serialId = serialId;
@@ -48,9 +48,10 @@ public class DS18B20 extends Thread {
 		return readRaw();
 	}
 
-    public void registerCallback(ThermometerCallback thermometerCallback) {
+    public void registerCallback(ThermometerCallback thermometerCallback, Thermometer thermometer) {
         this.thermometerCallback = thermometerCallback;
-        if (this.thermometerCallback != null) {
+        this.thermometer = thermometer;
+        if (this.thermometerCallback != null && this.thermometer != null) {
             CallbackMonitor cm = new CallbackMonitor(this);
             cm.start();
 
@@ -112,12 +113,9 @@ public class DS18B20 extends Thread {
                     String currentTemperature = Temperature.getValueString(tempF);
                     if (!currentTemperature.equalsIgnoreCase(lastTemperature)) {
                         //logger.debug("Temperature changed {}/{}", lastTemperature, currentTemperature);
-                        ThermometersList thermometersList = ThermometersList.getInstance();
-                        for (Thermometer thermometer : thermometersList.list()) {
-                            if (thermometer.getDs18B20().getFilename().equalsIgnoreCase(this.ds18B20.getFilename())) {
-                                thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
-                                break;
-                            }
+                        if (thermometer.getDs18B20().getFilename().equalsIgnoreCase(this.ds18B20.getFilename())) {
+                            thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
+                            break;
                         }
                     }
                     lastTemperature = currentTemperature;
