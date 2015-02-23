@@ -112,10 +112,7 @@ public class DS18B20 extends Thread {
                     tempF = this.ds18B20.getTempF();
                     String currentTemperature = Temperature.getValueString(tempF);
                     if (!currentTemperature.equalsIgnoreCase(lastTemperature)) {
-                        if (thermometer.getDs18B20().getFilename().equalsIgnoreCase(this.ds18B20.getFilename())) {
-                            thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
-                            break;
-                        }
+                        thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
                     }
                     lastTemperature = currentTemperature;
                 } catch (IOException e) {
