@@ -17,6 +17,7 @@ PACKAGE="com.arainfor.thermronstat.daemon"
 #2>/dev/null 1>&2 java -cp "/home/pi/thermronstat/lib/*" $LOG $PACKAGE.ControlThread $CONFIG&
 #2>/dev/null 1>&2 java -cp "/home/pi/thermronstat/lib/*" $LOG $PACKAGE.StatusThread $CONFIG&
 
-#sudo java -cp "/home/pi/thermronstat/lib/*" -Dlogback.configurationFile=/home/pi/thermronstat/config/logback.xml com.arainfor.thermronstat.daemon.StatusThread --config=/home/pi/nodeThermostat/thermostat.properties
-sudo LOGPATH="${THERMOSTAT_HOME}/log" java -cp "${THERMOSTAT_HOME}/lib/*" ${DEBUG} ${LOG} ${PACKAGE}.HvacMonitor ${CONFIG}&
-#sudo java -cp "/home/pi/thermronstat/lib/*" $DEBUG $LOG $PACKAGE.ThermometersThread $CONFIG&
+#java -cp "/home/pi/thermronstat/lib/*" -Dlogback.configurationFile=/home/pi/thermronstat/config/logback.xml com.arainfor.thermronstat.daemon.StatusThread --config=/home/pi/nodeThermostat/thermostat.properties
+#java -cp "/home/pi/thermronstat/lib/*" $DEBUG $LOG $PACKAGE.ThermometersThread $CONFIG&
+
+2>/dev/null 1>&2 LOGPATH="${THERMOSTAT_HOME}/log" java -cp "${THERMOSTAT_HOME}/lib/*" ${DEBUG} ${LOG} ${PACKAGE}.HvacMonitor ${CONFIG}&
