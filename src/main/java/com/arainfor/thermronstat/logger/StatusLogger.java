@@ -51,10 +51,10 @@ public class StatusLogger extends FileLogger {
             if (relayMapNow.get(idx) != relayMapLast.get(idx)) {
                 // if any relay position changed then we want a log entry.
                 dirty = true;
-                if (relayMapNow.get(idx)) {
-                    // if any relay is closed then we are not shutdown
-                    shutdown = false;
-                }
+            }
+            if (relayMapNow.get(idx)) {
+                // if any relay is closed then we are not shutdown
+                shutdown = false;
             }
         }
 
