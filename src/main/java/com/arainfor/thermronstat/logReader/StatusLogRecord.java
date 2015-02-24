@@ -79,10 +79,22 @@ public class StatusLogRecord {
 
             idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
             key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
+            value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length(), thisLine.indexOf(StringConstants.FieldDelimiter, idx + key.length()));
+
+            temperature = new Temperature(3, key);
+            try {
+                temperature.setValue(Double.parseDouble(value));
+
+            } catch (NumberFormatException nfe) {
+            }
+            temperatures.add(temperature);
+
+            idx += value.length() + key.length() + StringConstants.FieldDelimiter.length();
+            key = thisLine.substring(idx, thisLine.indexOf(StringConstants.KeyValueDelimiter, idx));
 
             value = thisLine.substring(idx + key.length() + StringConstants.KeyValueDelimiter.length());  // last one no field
 
-            temperature = new Temperature(3, key);
+            temperature = new Temperature(1, key);
             try {
                 temperature.setValue(Double.parseDouble(value));
 

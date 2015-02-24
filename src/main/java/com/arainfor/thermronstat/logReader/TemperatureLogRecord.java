@@ -102,7 +102,7 @@ public class TemperatureLogRecord {
         System.out.println("Done");
     }
 
-    protected Double parseTemperature(String value) {
+    protected double parseTemperature(String value) {
         try {
             return Double.parseDouble(value);
         } catch (Exception e) {

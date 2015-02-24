@@ -1,7 +1,7 @@
 package com.arainfor.util.file.io.gpio;
 
-import com.arainfor.thermronstat.RelayMap;
-import com.arainfor.thermronstat.StringConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -9,17 +9,17 @@ import java.io.IOException;
  * Created by arainfor on 2/22/15.
  */
 public class CallbackMonitor extends Thread {
+    private static final Logger logger = LoggerFactory.getLogger(CallbackMonitor.class);
+    private SysFsGpio sysFsGpio;
     private SysFsGpioCallback sysFsGpioCallback;
-    private RelayMap relayMap;
     private boolean lastValue = false;
     private boolean currentValue = false;
     private boolean firstRun = true;
 
-    public CallbackMonitor(SysFsGpioCallback sysFsGpioCallback, RelayMap relayMap) {
-        super(relayMap.getRelayDef().getName() + StringConstants.KeyValueDelimiter
-                + relayMap.getSysFsGpio().getPin() + relayMap.getSysFsGpio().getDirection());
+    public CallbackMonitor(SysFsGpioCallback sysFsGpioCallback, SysFsGpio sysFsGpio) {
+        super(sysFsGpio.toString());
         this.sysFsGpioCallback = sysFsGpioCallback;
-        this.relayMap = relayMap;
+        this.sysFsGpio = sysFsGpio;
     }
 
     @Override
@@ -27,22 +27,22 @@ public class CallbackMonitor extends Thread {
         while (true) {
 
             try {
-                currentValue = relayMap.getSysFsGpio().getValue();
+                currentValue = sysFsGpio.getValue();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Exception reading gpio:{}", sysFsGpio.toString(), e);
             }
 
             if (firstRun || currentValue != lastValue) {
-                //logger.debug("GPIO pin:{} changed to:{}", getPin(), currentValue);
+                logger.debug("GPIO:{} changed from: {} to:{}", sysFsGpio, lastValue, currentValue);
                 lastValue = currentValue;
                 firstRun = false;
-                sysFsGpioCallback.subjectChanged(relayMap.getSysFsGpio(), currentValue);
+                sysFsGpioCallback.subjectChanged(sysFsGpio, currentValue);
             }
 
             try {
                 Thread.sleep(Integer.parseInt(System.getProperty(SysFsGpio.class.getSimpleName() + ".sleep", "1100")));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.warn("Thread interrupted:", e);
             }
         }
     }

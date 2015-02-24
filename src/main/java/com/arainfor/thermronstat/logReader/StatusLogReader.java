@@ -130,12 +130,12 @@ public class StatusLogReader extends LogReader {
         int y1Cycles = 0;
         int y2Cycles = 0;
 
-        Double lowReturn = Double.POSITIVE_INFINITY;
-        Double highReturn = Double.POSITIVE_INFINITY;
-        Double lowPlenum = Double.POSITIVE_INFINITY;
-        Double highPlenum = Double.POSITIVE_INFINITY;
-        Double lowIndoor = Double.POSITIVE_INFINITY;
-        Double highIndoor = Double.POSITIVE_INFINITY;
+        double lowReturn = Double.POSITIVE_INFINITY;
+        double highReturn = Double.POSITIVE_INFINITY;
+        double lowPlenum = Double.POSITIVE_INFINITY;
+        double highPlenum = Double.POSITIVE_INFINITY;
+        double lowIndoor = Double.POSITIVE_INFINITY;
+        double highIndoor = Double.POSITIVE_INFINITY;
 
         for (StatusLogRecord slr : lr.statusLogRecord) {
             periodEnd = slr.date;
@@ -221,7 +221,7 @@ public class StatusLogReader extends LogReader {
                 if (diff > longestRun)
                     longestRun = diff;
 
-                System.out.println("Start: " + formatter.format(y1Start) + " Stop: " + formatter.format(y1Stop) + " Runtime: " + lr.fmtHhMmSs(diff));
+                System.out.println("Start: " + formatter.format(y1Start) + " Stop: " + formatter.format(y1Stop) + " Runtime: " + lr.fmtHhMmSs(diff) + " outdoor: " + slr.temperatures.get(3).getValue());
                 System.out.println("Temp Hi/Low:" + highIndoor + "/" + lowIndoor + " Return: " + highReturn + "/" + lowReturn + " Plenum: " + highPlenum + "/" + lowPlenum);
                 System.out.println();
                 highIndoor = lowIndoor = highPlenum = lowPlenum = highReturn = lowReturn = Double.POSITIVE_INFINITY;

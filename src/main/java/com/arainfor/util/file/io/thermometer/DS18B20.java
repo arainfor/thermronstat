@@ -40,15 +40,15 @@ public class DS18B20 extends Thread {
         return serialId;
     }
 
-    public Double getTempF() throws IOException {
-		return CelToFar(read());
-	}
-	
-	public Double getTempC() throws IOException {
-		return read();
+    public double getTempF() throws IOException {
+        return CelToFar(read());
 	}
 
-	protected Double read() throws IOException {
+    public double getTempC() throws IOException {
+        return read();
+	}
+
+    protected double read() throws IOException {
         if (isValid()) {
             InputStream fis;
 			BufferedReader br;

@@ -12,7 +12,7 @@ public class Temperature {
 
     private final int index;
     private final String name;
-    private Double value = Double.POSITIVE_INFINITY;
+    private double value = Double.POSITIVE_INFINITY;
 
     public Temperature(int index, String name) {
         this.index = index;
@@ -25,7 +25,7 @@ public class Temperature {
 
     }
 
-    public static String getValueString(Double value) {
+    public static String getValueString(double value) {
         NumberFormat df = NumberFormat.getInstance();
         df.setMaximumFractionDigits(1);
         df.setMinimumFractionDigits(1);
@@ -41,7 +41,7 @@ public class Temperature {
         return name;
     }
 
-    public Double getValue() {
+    public double getValue() {
         return value;
     }
 

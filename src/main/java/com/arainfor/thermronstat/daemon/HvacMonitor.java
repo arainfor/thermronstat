@@ -140,7 +140,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
         // Register as the callback class
         for (RelayMap relayMap : statusRelaysList.list()) {
             statusRelayCache.setValue(relayMap, false);  // Set the initial value
-            new com.arainfor.util.file.io.gpio.CallbackMonitor(this, relayMap).registerCallback();
+            new com.arainfor.util.file.io.gpio.CallbackMonitor(this, relayMap.getSysFsGpio()).registerCallback();
         }
 
         // Now just sit and wait for the magic to happen!!
@@ -170,7 +170,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
    }
 
     @Override
-    public synchronized void subjectChanged(Thermometer thermometerChanged, Double value) {
+    public synchronized void subjectChanged(Thermometer thermometerChanged, double value) {
 
         ArrayList<Temperature> temperatureList = TemperaturesList.getInstance().list();
         Iterator<Temperature> it = temperatureList.iterator();
