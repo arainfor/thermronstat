@@ -1,12 +1,12 @@
-thermronstat
+thermostat
 ============
 
 A RaspberryPi based thermostat project
 
 The 1wire DS18B20's are connected to GPIO4 pin
 
-This program is currently live on a single stage HEAT only appliction.  A planned H3/C2 implementation that will 
-controll my GeoThermal is in the works.
+This program is currently live on a single stage HEAT only application.  A planned H3/C2 implementation that will
+control my GeoThermal is in the works.
 
 Geo Notes:
 DX18x20 Inputs - 
@@ -34,10 +34,10 @@ G + Y1 + Y2 + O = Stage 2 Cool
 User Inputs:
 Target Temperature
 
-Programatic Inputs:
+Programmatic Inputs:
 Time in current state
 Temperature rise / fall % of target while in current state
-Efficency as defined by difference in return and plenum
+Efficiency as defined by difference in return and plenum
 
 
 

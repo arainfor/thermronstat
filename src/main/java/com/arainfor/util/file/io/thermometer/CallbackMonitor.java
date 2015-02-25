@@ -1,7 +1,7 @@
 package com.arainfor.util.file.io.thermometer;
 
-import com.arainfor.thermronstat.Temperature;
-import com.arainfor.thermronstat.Thermometer;
+import com.arainfor.thermostat.Temperature;
+import com.arainfor.thermostat.Thermometer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
 package com.arainfor.util.file.io.thermometer;
 
-import com.arainfor.thermronstat.Thermometer;
+import com.arainfor.thermostat.Thermometer;
 
 /**
  * Created by arainfor on 2/18/15.

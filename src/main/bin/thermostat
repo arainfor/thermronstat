@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          thermronstat
+# Provides:          thermostat
 # Required-Start:    $all
 # Required-Stop:     
 # Default-Start:     2 3 4 5
@@ -17,29 +17,29 @@ export THERMOSTAT_HOME=/var/local/thermostat
 
 case "$1" in
   start)
-      log_begin_msg "Starting thermronstat"
+      log_begin_msg "Starting thermostat"
       # do something
       /var/local/thermostat/run.sh
       log_end_msg $?
       exit 0
       ;;
   stop)
-      log_begin_msg "Stopping thermronstat (And all JAVA processes)"
+      log_begin_msg "Stopping thermostat"
       # do something to kill the service or cleanup or nothing
-      /var/local/thermostat/kill.sh
+      ${THERMOSTAT_HOME}/kill.sh
       log_end_msg $?
       exit 0
       ;;
   restart)
-      log_begin_msg "Restarting thermronstat"
-      /var/local/thermostat/kill.sh
-      /var/local/thermostat/run.sh
+      log_begin_msg "Restarting thermostat"
+      ${THERMOSTAT_HOME}/kill.sh
+      ${THERMOSTAT_HOME}/run.sh
       log_end_msg $?
       exit 0
   
       ;;
   *)
-      echo "Usage: /etc/init.d/<your script> {start|stop}"
+      echo "Usage: /etc/init.d/thermostat {start|stop}"
       exit 1
       ;;
 esac
