@@ -4,6 +4,11 @@ cd ${THERMOSTAT_HOME}
 
 . ${THERMOSTAT_HOME}/thermostat.common
 
+if [ -e ${THERMOSTAT_HOME}/pid ]; then
+    echo "Program already running or not shutdown clean: see ${THERMOSTAT_HOME}/pid"
+    exit 1
+fi
+
 CONFIG="--config=${THERMOSTAT_HOME}/thermostat.properties"
 
 LOG="-Dlogback.configurationFile=${THERMOSTAT_HOME}/logback.xml"
@@ -21,5 +26,4 @@ PACKAGE="com.arainfor.thermostat.daemon"
 
 2>/dev/null 1>&2 LOGPATH="${THERMOSTAT_HOME}/log" java -cp "${THERMOSTAT_HOME}/lib/*" ${DEBUG} ${LOG} ${PACKAGE}.HvacMonitor ${CONFIG}&
 myPid=$!
-echo myPid is ${myPid}
 echo ${myPid} > ${THERMOSTAT_HOME}/pid

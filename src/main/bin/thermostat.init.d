@@ -17,21 +17,22 @@ export THERMOSTAT_HOME=/var/local/thermostat
 
 case "$1" in
   start)
-      log_begin_msg "Starting thermostat"
+      log_begin_msg "Starting thermostat... "
       # do something
-      /var/local/thermostat/run.sh
+      rm ${THERMOSTAT_HOME}/pid
+      ${THERMOSTAT_HOME}/run.sh
       log_end_msg $?
       exit 0
       ;;
   stop)
-      log_begin_msg "Stopping thermostat"
+      log_begin_msg "Stopping thermostat... "
       # do something to kill the service or cleanup or nothing
       ${THERMOSTAT_HOME}/kill.sh
       log_end_msg $?
       exit 0
       ;;
   restart)
-      log_begin_msg "Restarting thermostat"
+      log_begin_msg "Restarting thermostat... "
       ${THERMOSTAT_HOME}/kill.sh
       ${THERMOSTAT_HOME}/run.sh
       log_end_msg $?

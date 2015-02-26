@@ -12,6 +12,7 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,6 +52,12 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
                             logger.error("Exception cleaning up gpio:{}", gpio.toString(), e);
                         }
                     }
+                }
+
+                try {
+                    new File("pid").delete();
+                } catch (Exception e) {
+                    logger.error("Error removing pid file:", e);
                 }
                 if (statusLogger != null) {
                     statusLogger.logMessage(APPLICATION_NAME + " shutdown!");

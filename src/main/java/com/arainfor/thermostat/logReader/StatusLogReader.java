@@ -255,7 +255,7 @@ public class StatusLogReader extends LogReader {
         defaultFormat.setMinimumFractionDigits(1);
 
         String runDate = new SimpleDateFormat(StringConstants.FmtDate).format(periodEnd);
-        String msg = StringUtils.center(" Summary for Log:" + cmd.getOptionValue("log") + " ending: " + runDate + " ", 80, '*');
+        String msg = StringUtils.center(" Summary for Log:" + logFile + " ending: " + runDate + " ", 80, '*');
         System.out.println(msg);
 
         System.out.println("Log period: " + lr.fmtHhMmSs(totalPeriod) + " Runtime: " + lr.fmtHhMmSs(y1TotalRunTime) + " Long: " + lr.fmtHhMmSs(longestRun) + " Short: " + lr.fmtHhMmSs(shortestRun));
