@@ -69,6 +69,10 @@ public class DS18B20 extends Thread {
 			if (line != null) {
 				int indexOfTemp = line.indexOf("=");
                 String celsius = line.substring(indexOfTemp + 1);
+                // When first initialized we can get max or min value.
+                if (celsius.startsWith("85") || celsius.startsWith("-62")) {
+                    return Double.POSITIVE_INFINITY;
+                }
                 return Double.valueOf(celsius) / 1000;
             }
 		}

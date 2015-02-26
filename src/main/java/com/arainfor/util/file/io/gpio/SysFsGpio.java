@@ -24,9 +24,8 @@ public class SysFsGpio {
     private String valueFileName;
     private String directionFileName;
 
-    public SysFsGpio(Pin pin, Direction direction) throws IOException {
-
-    	/*** Init GPIO port for output ***/
+    public SysFsGpio(Pin pin, Direction direction, boolean force) throws IOException {
+        /*** Init GPIO port for output ***/
 
         this.pin = pin;
         valueFileName = IO_BASE_FS + "gpio" + pin + "/value";
@@ -37,21 +36,28 @@ public class SysFsGpio {
         if (foreignHardware)
             return;
 
-    	// Reset the port
         File exportFileCheck = new File(IO_BASE_FS + "gpio" + pin);
-        if (exportFileCheck.exists()) {
-    		unExport(pin);
-    	}            
 
-    	// Set the port for use
-    	export(pin);
+        // Reset the port if its not setup how we expect it!
+        if (force || !new File(directionFileName).exists()) {
+            if (exportFileCheck.exists()) {
+                unExport(pin);
+            }
 
-    	setDirection(pin, direction);
+            // Set the port for use
+            export(pin);
+
+            setDirection(pin, direction);
+        }
 
         if (direction.ordinal() == Direction.OUT.ordinal()) {
             // Open file handle to issue commands to GPIO port
             commandFile = new FileWriter(valueFileName);
         }
+    }
+
+    public SysFsGpio(Pin pin, Direction direction) throws IOException {
+        this(pin, direction, false);
     }
 
     /**
