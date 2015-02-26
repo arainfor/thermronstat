@@ -18,12 +18,6 @@
             <includes>
                 <include>*.common</include>
                 <include>*.properties</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}/config</directory>
-            <outputDirectory>config</outputDirectory>
-            <includes>
                 <include>*.xml</include>
             </includes>
         </fileSet>

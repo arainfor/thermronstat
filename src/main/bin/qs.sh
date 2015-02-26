@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ -z ${THERMOSTAT_HOME} ]; then
+    echo "THERMOSTAT_HOME not set, please run setup!"
+    exit 1
+fi
+
 cd ${THERMOSTAT_HOME}
 . ${THERMOSTAT_HOME}/thermostat.common
 

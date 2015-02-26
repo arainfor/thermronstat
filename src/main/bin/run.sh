@@ -1,7 +1,6 @@
 #!/bin/sh
 
 cd ${THERMOSTAT_HOME}
-echo "$!" > pid
 
 . ${THERMOSTAT_HOME}/thermostat.common
 
@@ -21,3 +20,6 @@ PACKAGE="com.arainfor.thermostat.daemon"
 #java -cp "/home/pi/thermostat/lib/*" $DEBUG $LOG $PACKAGE.ThermometersThread $CONFIG&
 
 2>/dev/null 1>&2 LOGPATH="${THERMOSTAT_HOME}/log" java -cp "${THERMOSTAT_HOME}/lib/*" ${DEBUG} ${LOG} ${PACKAGE}.HvacMonitor ${CONFIG}&
+myPid=$!
+echo myPid is ${myPid}
+echo ${myPid} > ${THERMOSTAT_HOME}/pid
