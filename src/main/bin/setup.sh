@@ -6,8 +6,30 @@ else
     echo "Setup v1.0"
 fi
 
+function separator {
+    echo "*******************************************************************************"
+}
+
+function summaryList {
+    separator
+    echo "Thermostat home directory is: ${THERMOSTAT_HOME}"
+
+    echo "Connected thermometers"
+    ls -dc1 /sys/bus/w1/devices/28*
+    separator
+
+    echo "Active gpio pins"
+    ls -dc1 /sys/class/gpio/gpio*
+    separator
+
+    echo "Please verify the settings in thermostat.properties are correct for your setup"
+
+}
+
+
 # Check for root permissions
 if [ $(id -u) != 0 ]; then
+   summaryList
    echo "This script ${0} requires root permissions"
    exit 1
 fi
@@ -112,18 +134,6 @@ function applicationSetup {
         ${DEBUG} mkdir ${THERMOSTAT_HOME}/log
         ${DEBUG} chmod 664 ${THERMOSTAT_HOME}/log
     fi
-}
-
-function summaryList {
-
-    echo "Connected thermometers"
-    ls -dc1 /sys/bus/w1/devices/28*
-
-    echo "Active gpio pins"
-    ls -dc1 /sys/class/gpio/gpio*
-
-    echo "Please verify the settings in thermostat.properties are correct for your setup"
-
 }
 
 # Finally what we want to do!!!
