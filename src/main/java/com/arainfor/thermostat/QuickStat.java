@@ -82,17 +82,20 @@ public class QuickStat {
         for (Thermometer thermometer : thermometersList.list()) {
             if (thermometer.getDs18B20().isValid()) {
                 sb.append(thermometer);
+                sb.append(StringConstants.FieldDelimiter);
             }
         }
 
         // Create the status relays
         StatusRelaysList statusRelaysList = StatusRelaysList.getInstance();
-        StatusRelayCache statusRelayCache = StatusRelayCache.getInstance();
 
         // Register as the callback class
-        for (RelayMap relayMap : statusRelaysList.list()) {
-            statusRelayCache.setValue(relayMap, false);  // Set the initial value
-            sb.append(relayMap);
+        for (RelayMap relay : statusRelaysList.list()) {
+            int idx = relay.getRelayDef().ordinal();
+            String entry = relay.getRelayDef() + StringConstants.KeyValueDelimiter + relay.getSysFsGpio().getValue();
+            sb.append(entry);
+            sb.append(StringConstants.FieldDelimiter);
+
         }
 
         System.out.println(sb.toString());

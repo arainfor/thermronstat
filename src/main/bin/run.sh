@@ -7,7 +7,7 @@ echo "$!" > pid
 
 CONFIG="--config=${THERMOSTAT_HOME}/thermostat.properties"
 
-LOG="-Dlogback.configurationFile=${THERMOSTAT_HOME}/config/logback.xml"
+LOG="-Dlogback.configurationFile=${THERMOSTAT_HOME}/logback.xml"
 PACKAGE="com.arainfor.thermostat.daemon"
 
 #java -cp "/home/pi/thermostat/lib/*" $DEBUG $LOG $PACKAGE.ThermometersThread $CONFIG

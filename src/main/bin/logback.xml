@@ -1,4 +1,4 @@
-<configuration scan="true" debug="true">
+<configuration scan="true" debug="false">
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are assigned the type
@@ -30,8 +30,6 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOGPATH}/control.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>3</maxIndex>
         </rollingPolicy>
 
         <encoder>
@@ -44,8 +42,6 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOGPATH}/status.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>3</maxIndex>
         </rollingPolicy>
 
         <encoder>
@@ -58,8 +54,6 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOGPATH}/temperature.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>3</maxIndex>
         </rollingPolicy>
 
         <encoder>
