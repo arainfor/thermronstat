@@ -37,7 +37,6 @@ case "$1" in
       ${THERMOSTAT_HOME}/run.sh
       log_end_msg $?
       exit 0
-  
       ;;
   *)
       echo "Usage: /etc/init.d/thermostat {start|stop}"
