@@ -1,5 +1,20 @@
 /**
- * 
+ * Copyright 2014-2015
+ * Alan Rainford arainfor@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 package com.arainfor.util.file.io.gpio;
 
@@ -7,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-
 
 /**
  * This class provides a POJ interface to the SysFs User Space Kernel driver to GPIO
@@ -24,8 +38,7 @@ public class SysFsGpio {
     private String valueFileName;
     private String directionFileName;
 
-    public SysFsGpio(Pin pin, Direction direction, boolean force) throws IOException {
-        /*** Init GPIO port for output ***/
+    public SysFsGpio(Pin pin, Direction direction, boolean reConfigure) throws IOException {
 
         this.pin = pin;
         valueFileName = IO_BASE_FS + "gpio" + pin + "/value";
@@ -36,18 +49,9 @@ public class SysFsGpio {
         if (foreignHardware)
             return;
 
-        File exportFileCheck = new File(IO_BASE_FS + "gpio" + pin);
-
         // Reset the port if its not setup how we expect it!
-        if (force || !new File(directionFileName).exists()) {
-            if (exportFileCheck.exists()) {
-                unExport(pin);
-            }
-
-            // Set the port for use
-            export(pin);
-
-            setDirection(pin, direction);
+        if (reConfigure || !new File(directionFileName).exists()) {
+            configure(direction);
         }
 
         if (direction.ordinal() == Direction.OUT.ordinal()) {
@@ -63,31 +67,38 @@ public class SysFsGpio {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        try {
-            SysFsGpio pigpio = new SysFsGpio(new Pin(17), Direction.OUT);
-            pigpio.setValue(true);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        SysFsGpio pigpio = new SysFsGpio(new Pin(17), Direction.OUT);
+        pigpio.setValue(true);
 
     }
 
-    public void unExport(Pin pin) throws IOException {
+    private void configure(Direction direction) throws IOException {
+        File configuredFile = new File(IO_BASE_FS + "gpio" + pin);
+        if (configuredFile.exists()) {
+            unExport();
+        }
+
+        // Set the port for use
+        export();
+
+        setDirection(direction);
+    }
+
+    private void unExport() throws IOException {
 
         if (foreignHardware)
             return;
 
         FileWriter unexportFile = new FileWriter(IO_BASE_FS + "unexport");
 
-    	unexportFile.write(pin.getName());
+    	unexportFile.write(getPin().getName());
     	unexportFile.flush();
     	unexportFile.close();
     }
 
-    public void export(Pin pin) throws IOException {
+    private void export() throws IOException {
 
         if (foreignHardware)
             return;
@@ -96,7 +107,7 @@ public class SysFsGpio {
         FileWriter exportFile = new FileWriter(exportFileName);
 
         try {
-            exportFile.write(pin.getName());
+            exportFile.write(getPin().getName());
             exportFile.flush();
             exportFile.close();
         } catch (IOException e) {
@@ -105,36 +116,15 @@ public class SysFsGpio {
         }
     }
 
-    public void setDirection(Pin pin, Direction direction) throws IOException {
-
-        this.direction = direction;
-
-        if (foreignHardware)
-            return;
-
-        // Open file handle to port input/output control
-        FileWriter directionFile = new FileWriter(directionFileName);
-
-        // Set port for output
-        directionFile.write(direction.value());
-        directionFile.flush();
-        directionFile.close();
-    }
-
     public boolean getValue() throws IOException {
         if (foreignHardware)
             return false;
 
-        StringBuilder sb = new StringBuilder();
+        String line = "0";
         try {
             BufferedReader br = new BufferedReader(new FileReader(valueFileName));
             try {
-                String line = br.readLine();
-
-                if (line != null) {
-                    sb.append(line);
-                }
-
+                line = br.readLine();
             } finally {
                 br.close();
             }
@@ -142,7 +132,7 @@ public class SysFsGpio {
             throw new IOException("getValue reader error:" + e);
         }
 
-        return Integer.parseInt(sb.toString()) != 0;
+        return Integer.parseInt(line) != 0;
     }
 
     public void setValue(Boolean value) throws IOException {
@@ -165,15 +155,11 @@ public class SysFsGpio {
         if (foreignHardware)
             return Direction.OUT;
 
-        StringBuilder sb = new StringBuilder();
         try {
             BufferedReader br = new BufferedReader(new FileReader(directionFileName));
             try {
                 String line = br.readLine();
 
-                if (line != null) {
-                    sb.append(line);
-                }
                 if (!direction.toString().equalsIgnoreCase(line)) {
                     if (line.equalsIgnoreCase(Direction.IN.toString())) {
                         direction = Direction.IN;
@@ -189,8 +175,23 @@ public class SysFsGpio {
             return direction;
         }
 
-
         return direction;
+    }
+
+    private void setDirection(Direction direction) throws IOException {
+
+        this.direction = direction;
+
+        if (foreignHardware)
+            return;
+
+        // Open file handle to port input/output control
+        FileWriter directionFile = new FileWriter(directionFileName);
+
+        // Set port for output
+        directionFile.write(direction.value());
+        directionFile.flush();
+        directionFile.close();
     }
 
     public String toString() {
@@ -198,7 +199,7 @@ public class SysFsGpio {
     }
 
     public void cleanup(Pin pin) throws IOException {
-        unExport(pin);
+        unExport();
     }
 
 }
