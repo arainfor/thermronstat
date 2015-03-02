@@ -88,6 +88,9 @@ public class QuickStat {
 
         // Create the status relays
         StatusRelaysList statusRelaysList = StatusRelaysList.getInstance();
+        if (statusRelaysList.list().size() > 0) {
+            sb.append(StringConstants.LineSeparator);
+        }
 
         // Register as the callback class
         for (RelayMap relay : statusRelaysList.list()) {
