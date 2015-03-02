@@ -25,7 +25,7 @@ public class StatusLogger extends FileLogger {
     public StatusLogger() throws IOException {
         super();
 
-        logger.info("loading...{}", propFileName);
+        logger.debug("loading...{}", propFileName);
         Properties props = new PropertiesLoader(propFileName).getProps();
 
         // Append the system properties with our application properties

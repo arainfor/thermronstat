@@ -65,7 +65,7 @@
         <appender-ref ref="CONTROL"/>
     </logger>
 
-    <logger name="com.arainfor.thermostat.logger.StatusLogger">
+    <logger name="com.arainfor.thermostat.logger.StatusLogger" level="INFO">
         <appender-ref ref="STATUS"/>
     </logger>
 
@@ -74,7 +74,7 @@
     </logger>
 
     <logger name="com.arainfor.thermostat.logReader.StatusLogReader" level="ERROR"/>
-    <logger name="com.arainfor.thermostat.logReader.StatusLogReader" level="ERROR"/>
+    <logger name="com.arainfor.thermostat.QuickStat" level="INFO"/>
 
     <root level="DEBUG">
         <appender-ref ref="FILE"/>

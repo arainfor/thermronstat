@@ -59,7 +59,7 @@ public class QuickStat {
         if (cmd.getOptionValue("config") != null)
             propFileName = cmd.getOptionValue("config");
 
-        log.info("loading...{}", propFileName);
+        log.debug("loading...{}", propFileName);
 
         try {
             Properties props = new PropertiesLoader(propFileName).getProps();
@@ -86,6 +86,9 @@ public class QuickStat {
             }
         }
 
+        if (sb.toString().endsWith(StringConstants.FieldDelimiter))
+            sb.deleteCharAt(sb.toString().lastIndexOf(StringConstants.FieldDelimiter));
+
         // Create the status relays
         StatusRelaysList statusRelaysList = StatusRelaysList.getInstance();
         if (statusRelaysList.list().size() > 0) {
@@ -98,8 +101,10 @@ public class QuickStat {
             String entry = relay.getRelayDef() + StringConstants.KeyValueDelimiter + relay.getSysFsGpio().getValue();
             sb.append(entry);
             sb.append(StringConstants.FieldDelimiter);
-
         }
+
+        if (sb.toString().endsWith(StringConstants.FieldDelimiter))
+            sb.deleteCharAt(sb.toString().lastIndexOf(StringConstants.FieldDelimiter));
 
         System.out.println(sb.toString());
 
