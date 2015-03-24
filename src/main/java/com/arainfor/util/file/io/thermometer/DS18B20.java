@@ -66,7 +66,9 @@ public class DS18B20 extends Thread {
 	}
 
     protected double read() throws IOException {
+
         if (isValid()) {
+            logger.debug("read(): {}", filename);
             InputStream fis;
 			BufferedReader br;
 			String line;
@@ -80,13 +82,14 @@ public class DS18B20 extends Thread {
 			if (line.contains("YES")) {
 				line = br.readLine();
 			} else {
-				line = null;
+                logger.info("read(): {} invalid CRC", filename);
+                line = null;
 			}
 			br.close();
-
 			if (line != null) {
 				int indexOfTemp = line.indexOf("=");
                 String celsius = line.substring(indexOfTemp + 1);
+                logger.debug("read(): celsius {}", celsius);
                 // When first initialized we can get max or min value.
                 if (celsius.startsWith("85") || celsius.startsWith("-62")) {
                     return Double.POSITIVE_INFINITY;

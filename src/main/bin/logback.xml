@@ -61,7 +61,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.arainfor.thermostat.logger.ControlLogger">
+    <logger name="com.arainfor.thermostat.logger.ControlLogger" level="INFO">
         <appender-ref ref="CONTROL"/>
     </logger>
 
@@ -69,7 +69,7 @@
         <appender-ref ref="STATUS"/>
     </logger>
 
-    <logger name="com.arainfor.thermostat.logger.TemperatureLogger">
+    <logger name="com.arainfor.thermostat.logger.TemperatureLogger" level="INFO">
         <appender-ref ref="TEMPERATURE"/>
     </logger>
 

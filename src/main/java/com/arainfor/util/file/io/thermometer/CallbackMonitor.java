@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * 24-mar-2015 akr Per Thermometer change threshold.
+ *
  */
 package com.arainfor.util.file.io.thermometer;
 
@@ -34,16 +36,29 @@ public class CallbackMonitor extends Thread {
     private String lastTemperature;
     private ThermometerCallback thermometerCallback;
     private Thermometer thermometer;
+    private Double changeThreshold;
 
     public CallbackMonitor(ThermometerCallback thermometerCallback, Thermometer thermometer) {
         super(thermometer.getName());
         this.thermometerCallback = thermometerCallback;
         this.thermometer = thermometer;
+        this.changeThreshold = Double.parseDouble(System.getProperty(thermometer.getName() + ".change.threshold", ".2"));
+        logger.debug("Instance created for: {}", this.toString());
     }
 
     public static void main(String[] args) throws IOException {
         CallbackMonitor cm = new CallbackMonitor(null, new Thermometer(0, "Test", null));
         System.err.println(cm.crossedThreshold("80.0", "80.2"));
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("thermometer = ");
+        sb.append(thermometer.getName());
+        sb.append(" changeThreshold = ");
+        sb.append(changeThreshold);
+        return sb.toString();
     }
 
     @Override
@@ -55,18 +70,19 @@ public class CallbackMonitor extends Thread {
                 String currentTemperature = Temperature.getValueString(tempF);
 
                 if (crossedThreshold(lastTemperature, currentTemperature)) {
+                    logger.debug("new temperature:{}", currentTemperature);
                     thermometerCallback.subjectChanged(thermometer, Double.parseDouble(currentTemperature));
                     lastTemperature = currentTemperature;
                 }
 
-            } catch (IOException e) {
-                logger.warn("Thread interrupted:", e);
+            } catch (Exception e) {
+                logger.warn("Thread exception:", e);
             }
 
             try {
                 Thread.sleep(Integer.parseInt(System.getProperty(DS18B20.class.getSimpleName() + ".sleep", "4750")));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.warn("Thread interrupted:", e);
             }
 
         }
@@ -76,7 +92,7 @@ public class CallbackMonitor extends Thread {
         try {
             double diff = Math.abs(Double.parseDouble(lastTemperature) - Double.parseDouble(currentTemperature));
             diff = Double.parseDouble(Temperature.getValueString(diff));
-            return diff > Double.parseDouble(System.getProperty(CallbackMonitor.class.getSimpleName() + ".change.threshold", ".2"));
+            return diff > changeThreshold;
         } catch (Exception e) {
             return true;
         }
