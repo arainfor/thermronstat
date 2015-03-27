@@ -5,11 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.text.NumberFormat;
 
-/**
- * Created by arainfor on 1/10/15.
- */
 public class Thermometer {
 
     private static final Logger logger = LoggerFactory.getLogger(Thermometer.class);
@@ -38,22 +34,18 @@ public class Thermometer {
     /**
      * Prefered method to call as there is no IO
      *
-     * @param value
-     * @return
+     * @param value The temperature.
+     * @return Human readable description
      */
     public String toString(double value) {
         String temperature = Integer.toString(Integer.MIN_VALUE);
 
         try {
-            NumberFormat nf = NumberFormat.getInstance();
-            nf.setMaximumFractionDigits(1);
-
-            temperature = nf.format(value);
+            temperature = Temperature.getValueString(value);
         } catch (Exception e) {
             logger.warn("Error reading thermometer {} Exception:", ds18B20.getFilename(), e);
         }
-        return new String(name + StringConstants.KeyValueDelimiter + temperature);
-
+        return name + StringConstants.KeyValueDelimiter + temperature;
     }
 
     @Override
@@ -63,7 +55,7 @@ public class Thermometer {
         } catch (IOException e) {
             logger.warn("Error reading thermometer {} IOException:", ds18B20.getFilename(), e);
         }
-        return new String(name + StringConstants.KeyValueDelimiter + Double.POSITIVE_INFINITY);
+        return name + StringConstants.KeyValueDelimiter + Double.POSITIVE_INFINITY;
     }
 
 }
