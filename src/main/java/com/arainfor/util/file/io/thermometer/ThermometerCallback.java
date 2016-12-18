@@ -21,6 +21,7 @@ package com.arainfor.util.file.io.thermometer;
 import com.arainfor.thermostat.Thermometer;
 
 /**
+ * This interface may be implemented to be notified of value changes.
  * Created by arainfor on 2/18/15.
  */
 public interface ThermometerCallback {

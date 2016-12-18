@@ -22,9 +22,11 @@ import com.arainfor.thermostat.*;
 import com.arainfor.thermostat.logger.StatusLogger;
 import com.arainfor.thermostat.logger.TemperatureLogger;
 import com.arainfor.util.file.PropertiesLoader;
+import com.arainfor.util.file.io.gpio.GpioProcessor;
 import com.arainfor.util.file.io.gpio.SysFsGpio;
 import com.arainfor.util.file.io.gpio.SysFsGpioCallback;
 import com.arainfor.util.file.io.thermometer.ThermometerCallback;
+import com.arainfor.util.file.io.thermometer.ThermometerProcessor;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +156,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
         // Register as the callback class
         for (Thermometer thermometer : thermometersList.list()) {
             if (thermometer.getDs18B20().isValid()) {
-                new com.arainfor.util.file.io.thermometer.CallbackMonitor(this, thermometer).registerCallback();
+                new ThermometerProcessor(this, thermometer).registerCallback();
             }
         }
 
@@ -165,7 +167,7 @@ public class HvacMonitor extends Thread implements SysFsGpioCallback, Thermomete
         // Register as the callback class
         for (RelayMap relayMap : statusRelaysList.list()) {
             statusRelayCache.setValue(relayMap, false);  // Set the initial value
-            new com.arainfor.util.file.io.gpio.CallbackMonitor(this, relayMap.getSysFsGpio()).registerCallback();
+            new GpioProcessor(this, relayMap.getSysFsGpio()).registerCallback();
         }
 
         // Now just sit and wait for the magic to happen!!
