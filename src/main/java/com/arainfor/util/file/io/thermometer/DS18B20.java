@@ -32,11 +32,11 @@ import java.nio.charset.Charset;
  * @author arainfor
  *
  */
-public class DS18B20 extends Thread {
+public class DS18B20 {
 
   private static final Logger logger = LoggerFactory.getLogger(DS18B20.class);
   // The 1wire DS18B20's are connected to GPIO4 pin.
-  private final String SYS_BUS_FS = "/sys/bus/w1/devices/";
+  private final String SYS_BUS_FS = System.getProperty("W1.IO_BASE_FS", "/sys/bus/w1/") + "devices/";
   private String filename = null;
   private String serialId = null;
   private boolean valid;
@@ -56,7 +56,7 @@ public class DS18B20 extends Thread {
   }
 
   public double getTempF() throws IOException {
-    return CelToFar(read());
+    return CelToFar(getTempC());
   }
 
   public double getTempC() throws IOException {

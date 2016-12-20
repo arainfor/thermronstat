@@ -53,7 +53,7 @@ public class GpioProcessor extends Thread {
       }
 
       if (firstRun || currentValue != lastValue) {
-        logger.debug("GPIO:{} changed from: {} to:{}", sysFsGpio, lastValue, currentValue);
+        logger.debug("GPIO:{} changed from:{} to:{}", sysFsGpio, lastValue, currentValue);
         lastValue = currentValue;
         firstRun = false;
         sysFsGpioCallback.subjectChanged(sysFsGpio, currentValue);

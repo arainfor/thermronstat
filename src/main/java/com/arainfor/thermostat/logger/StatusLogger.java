@@ -4,7 +4,6 @@ import com.arainfor.thermostat.RelayMap;
 import com.arainfor.thermostat.StringConstants;
 import com.arainfor.thermostat.Temperature;
 import com.arainfor.thermostat.TemperaturesList;
-import com.arainfor.util.file.PropertiesLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +23,6 @@ public class StatusLogger extends FileLogger {
 
     public StatusLogger() throws IOException {
         super();
-
-        logger.debug("loading...{}", propFileName);
-        Properties props = new PropertiesLoader(propFileName).getProps();
-
-        // Append the system properties with our application properties
-        props.putAll(System.getProperties());
-        System.setProperties(props);
     }
 
     public void logRelays(Map<RelayMap, Boolean> statusRelayValue) {

@@ -160,7 +160,7 @@ public class SysFsGpio {
             try {
                 String line = br.readLine();
 
-                if (!direction.toString().equalsIgnoreCase(line)) {
+                if (direction == null || !direction.toString().equalsIgnoreCase(line)) {
                     if (line.equalsIgnoreCase(Direction.IN.toString())) {
                         direction = Direction.IN;
                     } else {
